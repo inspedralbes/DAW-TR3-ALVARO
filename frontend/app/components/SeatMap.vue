@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
-import { useSeatStore } from '~/app/stores/seatStore'
+import { useSeatStore } from '~/stores/seatStore'
 
 const seatStore = useSeatStore()
 const { $socket } = useNuxtApp()

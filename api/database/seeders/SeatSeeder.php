@@ -12,6 +12,12 @@ class SeatSeeder extends Seeder
      */
     public function run(): void
     {
+        $event = \App\Models\Event::create([
+            'title' => 'Concierto Inaugural',
+            'date' => now()->addDays(15),
+            'description' => 'Un evento espectacular de prueba.',
+        ]);
+
         $rows = ['A', 'B', 'C', 'D', 'E'];
         $numbersPerRow = 10;
 
@@ -22,6 +28,7 @@ class SeatSeeder extends Seeder
                     'number' => $i,
                     'status' => 'available',
                     'price' => 50.00,
+                    'event_id' => $event->id,
                 ]);
             }
         }

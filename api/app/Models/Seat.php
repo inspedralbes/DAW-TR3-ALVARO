@@ -22,6 +22,8 @@ class Seat extends Model
         'session_id',
         'reserved_at',
         'price',
+        'event_id',
+        'user_id',
     ];
 
     /**
@@ -35,5 +37,15 @@ class Seat extends Model
             'reserved_at' => 'datetime',
             'price' => 'decimal:2',
         ];
+    }
+
+    public function event()
+    {
+        return $this->belongsTo(Event::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }
