@@ -33,3 +33,17 @@ Aquí podeu trobar més informació sobre la nostra planificació i disseny del 
 - Petita descripció
 - URL de producció (quan la tingueu)
 - Estat: (explicació d'en quin punt està)
+
+## Requisitos de Entorno (Broadcasting)
+
+### Backend (api/.env)
+- `BROADCAST_CONNECTION=redis`
+- `REDIS_HOST=redis` (o `127.0.0.1` si corre local)
+
+### Frontend (Nuxt runtimeConfig)
+- `NUXT_PUBLIC_API_URL`: URL del backend Laravel (ej: http://localhost:8000)
+- `NUXT_PUBLIC_WS_URL`: URL del servidor Node.js (ej: http://localhost:3001)
+
+### WebSockets (Node.js env)
+- `REDIS_HOST`: Host de Redis (ej: redis)
+- `DB_HOST`: Host de MySQL (ej: db)

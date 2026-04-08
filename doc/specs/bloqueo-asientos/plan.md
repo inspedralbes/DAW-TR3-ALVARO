@@ -1,29 +1,72 @@
-# Plan: Estrategia de Implementación Técnica (Laravel + Node.js)
+# Implementation Plan: Bloqueo de Asientos en Tiempo Real
 
-## Arquitectura Híbrida
-- **Laravel (API Backend Principal):** Es la fuente de la verdad para la base de datos (Transacciones SQL, Autenticación de Usuarios API).
-- **Node.js (Microservicio WebSockets):** Servidor dedicado puramente a Socket.IO. Solo se encarga de repartir mensajes al cliente en tiempo real y conectarse con Nuxt.
-- **Nuxt (Frontend Web):** Realiza llamadas HTTP REST a Laravel, pero se mantiene "suscrito" por Socket.IO al servidor de Node para cambios visuales.
+**Branch**: `implementacio-speckit` | **Date**: 2026-04-07 | **Spec**: [spec.md](./spec.md)
+**Input**: Feature specification from `doc/specs/bloqueo-asientos/spec.md`
 
-## Fase 1: API Transaccional (Laravel PHP)
-1. **Endpoint `POST /api/seats/reserve`**:
-   - Inicia una Transacción SQL para evitar race conditions.
-   - Ejecuta: `UPDATE seats SET status = 'reserved', session_id = ?, reserved_at = NOW() WHERE id = ? AND status = 'available'`.
-   - Si se realiza con éxito, Laravel notifica asíncronamente al servidor Node.js (vía Redis Pub/Sub o llamada HTTP post-hook) informando el ID bloqueado.
-   - Retorna un `200 OK` al frontend.
+## Summary
+Implementación de un sistema de reserva de asientos en tiempo real utilizando una arquitectura híbrida: Laravel (PHP 8.3) para la lógica transaccional y persistencia en MySQL, Node.js (Express) para la comunicación bidireccional vía Socket.IO, y Nuxt 4 para la interfaz de usuario. El sistema garantiza la integridad de las reservas mediante transacciones SQL y libera automáticamente los asientos tras 5 minutos de inactividad.
 
-## Fase 2: Módulo WebSockets (Node.js + Socket.IO)
-1. Construir un servidor Socket.IO liviano en Node.
-2. Servirá como "Altavoz": escucha notificaciones internas desde Laravel.
-3. Cuando Laravel notifica una reserva o liberación, el servidor Node.js lanza inmediatamente `io.emit('seat_updated', { seat_id, status: 'reserved' })` a todos los clientes (Nuxt) conectados.
+## Technical Context
 
-## Fase 3: Mecanismo de Limpieza Automático (Laravel Schedule)
-1. Generar un comando de consola `php artisan seats:release-expired`.
-2. Lanzar una query: `UPDATE seats SET status = 'available', session_id = NULL, reserved_at = NULL WHERE status = 'reserved' AND reserved_at < NOW() - INTERVAL 5 MINUTE`.
-3. Registrar este comando en `routes/console.php` (Laravel 11) o en el Kernel usando Task Scheduling: `->everyMinute()`.
-4. El comando notificará al servidor Node para que emita la señal `status: 'available'` por cada ticket destrabado.
+**Language/Version**: PHP 8.3 (Laravel 13), Node.js 20+, Nuxt 4 (Vue 3/TS)  
+**Primary Dependencies**: Socket.IO, Laravel, Pinia, MySQL, Redis (NEEDS CLARIFICATION)  
+**Storage**: MySQL (MariaDB 10.x/11.x)  
+**Testing**: Pest (PHP), Vitest (Frontend/Node)  
+**Target Platform**: Web Browser / Desktop  
+**Project Type**: Web Application (Frontend + Backend + Microservice)  
+**Performance Goals**: Latencia de actualización visual < 500ms tras reserva exitosa.  
+**Constraints**: Timeout de 5m para reservas no pagadas.  
+**Scale/Scope**: NEEDS CLARIFICATION (Carga esperada de usuarios concurrentes)
 
-## Fase 4: Integración UI (Frontend - Nuxt & Pinia)
-1. **Estado Compartido**: Guardar la lista de asientos en Pinia (`seats[]`).
-2. **WebSockets (Escucha Activa)**: Conectar Nuxt con el puerto del servidor de Node. Cada alerta de `seat_updated` sobrescribe el asiento específico en Pinia para cambiar el color instantáneamente a gris.
-3. **HTTP (Acción Proactiva)**: Cuando el usuario hace clic en el asiento, Pinia invoca a `axios`/`fetch` contra el endpoint **Laravel** `/api/seats/reserve`.
+## Constitution Check
+
+*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+
+| Gate | Status | Detail |
+|------|--------|--------|
+| TDD Mandatory | PLANNED | Se han definido las bases para los tests en Pest. |
+| Transaction Safety | PASSED | Confirmado el uso de atomic updates/transacciones en research.md. |
+| Event Schema | PASSED | Contrato definido en doc/specs/bloqueo-asientos/contracts/websockets.md. |
+| Automated Cleanup | PASSED | Estrategia de limpieza vía Laravel Scheduler confirmada. |
+
+## Project Structure
+
+### Documentation (this feature)
+
+```text
+doc/specs/bloqueo-asientos/
+├── plan.md              # Este archivo
+├── research.md          # Resultado de Fase 0
+├── data-model.md        # Resultado de Fase 1
+├── quickstart.md        # Resultado de Fase 1
+├── contracts/           # Resultado de Fase 1 (WebSocket + API)
+└── tasks.md             # Tareas detalladas
+```
+
+### Source Code (repository root)
+
+```text
+api/                     # Laravel Backend
+├── app/Http/Controllers/SeatController.php
+├── app/Models/Seat.php
+├── database/migrations/
+└── tests/Feature/SeatReservationTest.php
+
+frontend/                # Nuxt Frontend
+├── components/SeatMap.vue
+├── stores/seatStore.ts
+└── plugins/socket.io.client.ts
+
+websockets/              # Node.js WebSocket Server
+├── server.js
+├── db.js
+└── handlers/seatHandler.js
+```
+
+**Structure Decision**: Se mantiene la estructura multi-proyecto detectada (api, frontend, websockets).
+
+## Complexity Tracking
+
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+|-----------|------------|-------------------------------------|
+| Dos backends (Laravel + Node) | Gestión eficiente de WebSockets en tiempo real. | Laravel Reverb/Pusher son alternativas, pero se prefiere Node.js por compatibilidad con el entorno educativo actual. |
