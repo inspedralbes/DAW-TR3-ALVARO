@@ -99,7 +99,12 @@ const processCheckout = async () => {
     for (const seatId of selectedSeats.value) {
       const seat = seatStore.seats.find((s) => s.id === seatId);
       // Skip if already reserved by this session
-      if (seat && seat.status === 'reserved' && seat.session_id === seatStore.sessionId) continue;
+      if (
+        seat &&
+        seat.status === "reserved" &&
+        seat.session_id === seatStore.sessionId
+      )
+        continue;
 
       await $fetch<{ success: boolean }>(
         `${config.public.apiUrl}/api/seats/reserve`,
@@ -112,9 +117,9 @@ const processCheckout = async () => {
 
     // Navigate to checkout page with seat data
     await router.push({
-      path: '/checkout',
+      path: "/checkout",
       query: {
-        seats: Array.from(selectedSeats.value).join(','),
+        seats: Array.from(selectedSeats.value).join(","),
         session: seatStore.sessionId,
         total: totalAmount.value.toString(),
       },
@@ -159,24 +164,24 @@ const getSeatColor = (id: number, status: string) => {
       class="fixed top-0 w-full z-50 bg-slate-950/60 backdrop-blur-xl shadow-2xl shadow-black/40 flex justify-between items-center px-6 py-4"
     >
       <div
-        class="text-2xl font-bold tracking-tighter electric-gradient bg-clip-text text-transparent uppercase font-headline"
+        class="text-2xl font-bold tracking-tighter bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent uppercase font-headline"
       >
-        ELECTRIC STAGE
+        TICKETMONSTER
       </div>
       <div class="hidden md:flex gap-8 items-center">
         <NuxtLink
           to="/"
-          class="font-headline tracking-tight text-secondary/80 hover:text-secondary transition-colors"
+          class="font-headline tracking-tight text-fuchsia-400/80 hover:text-fuchsia-400 transition-colors"
           >Concerts</NuxtLink
         >
         <a
           href="/"
-          class="font-headline tracking-tight text-secondary border-b-2 border-secondary pb-1"
+          class="font-headline tracking-tight text-fuchsia-400 border-b-2 border-fuchsia-500 pb-1"
           >Venues</a
         >
         <NuxtLink
           to="/my-tickets"
-          class="font-headline tracking-tight text-secondary/80 hover:text-secondary transition-colors"
+          class="font-headline tracking-tight text-fuchsia-400/80 hover:text-fuchsia-400 transition-colors"
           >My Tickets</NuxtLink
         >
       </div>
@@ -193,7 +198,6 @@ const getSeatColor = (id: number, status: string) => {
     <aside
       class="fixed left-0 top-0 h-screen w-20 border-r border-white/5 bg-slate-900 flex flex-col items-center py-20 gap-8 z-40 hidden md:flex"
     >
-
       <button
         class="flex flex-col items-center justify-center text-blue-400 bg-blue-500/10 border-r-2 border-blue-500 w-full py-4 transition-all duration-300"
       >
@@ -316,7 +320,10 @@ const getSeatColor = (id: number, status: string) => {
               @click="handleSeatClick(seat.id)"
               :title="`Group - Row ${seat.row} - Seat ${seat.number}`"
             >
-              <span class="text-[0.45rem] sm:text-[0.6rem] md:text-[0.7rem] font-bold tracking-tighter">{{ seat.row }}{{ seat.number }}</span>
+              <span
+                class="text-[0.45rem] sm:text-[0.6rem] md:text-[0.7rem] font-bold tracking-tighter"
+                >{{ seat.row }}{{ seat.number }}</span
+              >
             </button>
           </div>
 
@@ -409,7 +416,7 @@ const getSeatColor = (id: number, status: string) => {
               : 'bg-surface-container-highest text-outline cursor-not-allowed opacity-70',
           ]"
         >
-          {{ isProcessing ? 'Processing...' : 'Proceed to Payment' }}
+          {{ isProcessing ? "Processing..." : "Proceed to Payment" }}
         </button>
         <p class="text-center text-[10px] text-outline mt-4 font-body">
           Transaction fees via Laravel API processed securely.
@@ -471,8 +478,12 @@ const getSeatColor = (id: number, status: string) => {
     <div
       class="fixed inset-0 -z-10 opacity-20 pointer-events-none overflow-hidden blur-[80px]"
     >
-      <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary rounded-full mix-blend-screen opacity-30"></div>
-      <div class="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-tertiary rounded-full mix-blend-screen opacity-20"></div>
+      <div
+        class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary rounded-full mix-blend-screen opacity-30"
+      ></div>
+      <div
+        class="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-tertiary rounded-full mix-blend-screen opacity-20"
+      ></div>
     </div>
   </div>
 </template>

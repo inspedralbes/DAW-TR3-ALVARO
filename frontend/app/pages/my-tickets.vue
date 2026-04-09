@@ -14,29 +14,55 @@
       ></div>
     </div>
 
-    <!-- Top Nav -->
+    <!-- TopNavBar (identical to index.vue) -->
     <header
-      class="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 flex items-center px-6 h-16 gap-4"
+      class="fixed top-0 w-full z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-white/5 font-headline tracking-tight"
     >
-      <NuxtLink
-        to="/"
-        class="flex items-center gap-2 text-on-surface-variant hover:text-on-surface transition-colors group"
-      >
-        <span
-          class="material-symbols-outlined group-hover:-translate-x-1 transition-transform"
-          >arrow_back</span
-        >
-        <span class="font-headline text-sm uppercase tracking-wider">Events</span>
-      </NuxtLink>
-      <div class="flex-1"></div>
       <div
-        class="text-xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 font-headline"
+        class="flex justify-between items-center px-6 h-20 w-full max-w-[1920px] mx-auto"
       >
-        ELECTRIC STAGE
+        <div
+          class="text-2xl font-bold tracking-tighter bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent uppercase font-headline"
+        >
+          TICKETMONSTER
+        </div>
+        <nav class="hidden md:flex items-center space-x-8">
+          <NuxtLink
+            to="/"
+            class="text-zinc-400 hover:text-white transition-colors"
+            >Concerts</NuxtLink
+          >
+          <a
+            class="text-zinc-400 hover:text-white transition-colors"
+            href="/#venues"
+            >Venues</a
+          >
+          <NuxtLink
+            to="/my-tickets"
+            class="text-fuchsia-400 border-b-2 border-fuchsia-500 pb-1"
+            >My Tickets</NuxtLink
+          >
+        </nav>
+        <div class="flex items-center space-x-4">
+          <button
+            class="material-symbols-outlined p-2 text-zinc-400 hover:bg-white/5 transition-all duration-300 rounded-full"
+          >
+            search
+          </button>
+          <button
+            class="material-symbols-outlined p-2 text-fuchsia-500 hover:bg-white/5 transition-all duration-300 rounded-full"
+          >
+            account_circle
+          </button>
+        </div>
       </div>
+      <div
+        class="bg-gradient-to-r from-fuchsia-500/20 via-purple-500/20 to-cyan-400/20 h-[1px]"
+      ></div>
     </header>
 
-    <main class="pt-24 pb-16 px-4 md:px-6 max-w-4xl mx-auto">
+    <main class="pt-20 pb-16 min-h-screen">
+      <div class="container mx-auto px-6 py-12 max-w-5xl">
       <!-- Page title -->
       <div class="mb-10">
         <h1
@@ -86,11 +112,11 @@
         v-if="error"
         class="glass-panel rounded-2xl p-6 border border-error/30 bg-error/5 flex items-center gap-4 mb-8"
       >
-        <span class="material-symbols-outlined text-error text-3xl"
-          >error</span
-        >
+        <span class="material-symbols-outlined text-error text-3xl">error</span>
         <div>
-          <p class="font-headline font-bold text-on-surface">No tickets found</p>
+          <p class="font-headline font-bold text-on-surface">
+            No tickets found
+          </p>
           <p class="text-on-surface-variant text-sm mt-1">{{ error }}</p>
         </div>
       </div>
@@ -118,13 +144,14 @@
                 <div
                   class="w-14 h-14 rounded-full signature-pulse shadow-[0_0_20px_rgba(255,171,243,0.4)] flex items-center justify-center flex-shrink-0"
                 >
-                  <span
-                    class="material-symbols-outlined text-white text-2xl"
+                  <span class="material-symbols-outlined text-white text-2xl"
                     >confirmation_number</span
                   >
                 </div>
                 <div>
-                  <p class="text-xs text-primary font-bold uppercase tracking-widest mb-1">
+                  <p
+                    class="text-xs text-primary font-bold uppercase tracking-widest mb-1"
+                  >
                     Confirmed Purchase
                   </p>
                   <h2
@@ -132,8 +159,12 @@
                   >
                     {{ result.event.name }}
                   </h2>
-                  <p class="text-on-surface-variant text-sm mt-0.5 flex items-center gap-2">
-                    <span class="material-symbols-outlined text-xs">stadium</span>
+                  <p
+                    class="text-on-surface-variant text-sm mt-0.5 flex items-center gap-2"
+                  >
+                    <span class="material-symbols-outlined text-xs"
+                      >stadium</span
+                    >
                     {{ result.event.venue }}
                     <span class="text-outline">•</span>
                     <span class="material-symbols-outlined text-xs">event</span>
@@ -166,7 +197,9 @@
               </div>
               <div class="flex items-center gap-6">
                 <div class="text-right">
-                  <p class="text-xs text-on-surface-variant uppercase tracking-wider">
+                  <p
+                    class="text-xs text-on-surface-variant uppercase tracking-wider"
+                  >
                     Tickets
                   </p>
                   <p class="font-headline font-bold text-on-surface">
@@ -174,7 +207,9 @@
                   </p>
                 </div>
                 <div class="text-right">
-                  <p class="text-xs text-on-surface-variant uppercase tracking-wider">
+                  <p
+                    class="text-xs text-on-surface-variant uppercase tracking-wider"
+                  >
                     Total Paid
                   </p>
                   <p class="font-headline font-bold text-primary text-lg">
@@ -186,16 +221,16 @@
           </div>
 
           <!-- Tickets grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          <div
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8"
+          >
             <div
               v-for="ticket in result.tickets"
               :key="ticket.id"
               class="group glass-panel rounded-2xl border border-white/10 hover:border-primary/30 transition-all duration-300 overflow-hidden"
             >
               <!-- Ticket top strip -->
-              <div
-                class="h-1.5 w-full signature-pulse"
-              ></div>
+              <div class="h-1.5 w-full signature-pulse"></div>
 
               <div class="p-5">
                 <!-- Seat label big -->
@@ -203,16 +238,23 @@
                   <div
                     class="w-14 h-14 rounded-xl bg-primary/10 border border-primary/20 flex flex-col items-center justify-center"
                   >
-                    <span class="text-primary font-headline font-black text-lg leading-none">
+                    <span
+                      class="text-primary font-headline font-black text-lg leading-none"
+                    >
                       {{ ticket.row }}{{ ticket.number }}
                     </span>
-                    <span class="text-primary/60 text-[9px] uppercase tracking-wider mt-0.5">Seat</span>
+                    <span
+                      class="text-primary/60 text-[9px] uppercase tracking-wider mt-0.5"
+                      >Seat</span
+                    >
                   </div>
                   <div class="text-right">
                     <span
                       class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-tertiary/10 border border-tertiary/20 text-tertiary text-[10px] font-bold uppercase tracking-wider"
                     >
-                      <span class="material-symbols-outlined text-xs">check_circle</span>
+                      <span class="material-symbols-outlined text-xs"
+                        >check_circle</span
+                      >
                       Confirmed
                     </span>
                   </div>
@@ -221,20 +263,31 @@
                 <!-- Ticket details -->
                 <div class="space-y-2">
                   <div class="flex items-center gap-2 text-sm">
-                    <span class="material-symbols-outlined text-xs text-on-surface-variant">location_on</span>
-                    <span class="text-on-surface-variant">Row {{ ticket.row }}, Seat {{ ticket.number }}</span>
+                    <span
+                      class="material-symbols-outlined text-xs text-on-surface-variant"
+                      >location_on</span
+                    >
+                    <span class="text-on-surface-variant"
+                      >Row {{ ticket.row }}, Seat {{ ticket.number }}</span
+                    >
                   </div>
                   <div class="flex items-center gap-2 text-sm">
-                    <span class="material-symbols-outlined text-xs text-on-surface-variant">confirmation_number</span>
+                    <span
+                      class="material-symbols-outlined text-xs text-on-surface-variant"
+                      >confirmation_number</span
+                    >
                     <span class="text-on-surface-variant font-mono text-xs">
-                      #{{ String(ticket.id).padStart(6, '0') }}
+                      #{{ String(ticket.id).padStart(6, "0") }}
                     </span>
                   </div>
                   <div
                     v-if="ticket.purchased_at"
                     class="flex items-center gap-2 text-sm"
                   >
-                    <span class="material-symbols-outlined text-xs text-on-surface-variant">schedule</span>
+                    <span
+                      class="material-symbols-outlined text-xs text-on-surface-variant"
+                      >schedule</span
+                    >
                     <span class="text-on-surface-variant text-xs">
                       {{ formatDate(ticket.purchased_at) }}
                     </span>
@@ -242,8 +295,13 @@
                 </div>
 
                 <!-- Price + dashed separator -->
-                <div class="mt-4 pt-4 border-t border-dashed border-white/10 flex items-center justify-between">
-                  <span class="text-xs text-on-surface-variant uppercase tracking-wider">Price paid</span>
+                <div
+                  class="mt-4 pt-4 border-t border-dashed border-white/10 flex items-center justify-between"
+                >
+                  <span
+                    class="text-xs text-on-surface-variant uppercase tracking-wider"
+                    >Price paid</span
+                  >
                   <span class="font-headline font-bold text-on-surface">
                     €{{ ticket.price.toFixed(2) }}
                   </span>
@@ -253,9 +311,15 @@
           </div>
 
           <!-- Download hint -->
-          <div class="flex items-center justify-center gap-3 text-on-surface-variant text-sm">
+          <div
+            class="flex items-center justify-center gap-3 text-on-surface-variant text-sm"
+          >
             <span class="material-symbols-outlined text-base">info</span>
-            <span>Your e-tickets have been sent to <strong class="text-on-surface">{{ result.user.email }}</strong>. Present them at the venue entrance.</span>
+            <span
+              >Your e-tickets have been sent to
+              <strong class="text-on-surface">{{ result.user.email }}</strong
+              >. Present them at the venue entrance.</span
+            >
           </div>
         </div>
       </transition>
@@ -268,7 +332,10 @@
         <span class="material-symbols-outlined text-6xl opacity-30"
           >confirmation_number</span
         >
-        <p class="text-lg font-medium">Enter your email above to view your tickets.</p>
+        <p class="text-lg font-medium">
+          Enter your email above to view your tickets.
+        </p>
+      </div>
       </div>
     </main>
   </div>
@@ -276,8 +343,22 @@
 
 <script setup lang="ts">
 useHead({
-  title: "My Tickets | ELECTRIC STAGE",
+  title: "My Tickets | TICKETMONSTER",
   htmlAttrs: { class: "dark", lang: "en" },
+  link: [
+    {
+      rel: "preconnect",
+      href: "https://fonts.googleapis.com",
+    },
+    {
+      rel: "stylesheet",
+      href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap",
+    },
+    {
+      rel: "stylesheet",
+      href: "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap",
+    },
+  ],
 });
 
 interface Ticket {
@@ -311,7 +392,7 @@ const fetchTickets = async () => {
   try {
     const data = await $fetch<TicketsResult>(
       `${config.public.apiUrl}/api/tickets`,
-      { query: { email: email.value } }
+      { query: { email: email.value } },
     );
     if (data.success) {
       result.value = data;
@@ -340,7 +421,9 @@ const formatDate = (iso: string) => {
 <style scoped>
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
 }
 .fade-enter-from,
 .fade-leave-to {

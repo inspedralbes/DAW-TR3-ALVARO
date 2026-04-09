@@ -1,5 +1,7 @@
 <template>
-  <div class="bg-background text-on-background font-body selection:bg-primary selection:text-on-primary">
+  <div
+    class="bg-background text-on-background font-body selection:bg-primary selection:text-on-primary"
+  >
     <!-- TopNavBar -->
     <header
       class="fixed top-0 w-full z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-white/5 font-headline tracking-tight"
@@ -8,9 +10,9 @@
         class="flex justify-between items-center px-6 h-20 w-full max-w-[1920px] mx-auto"
       >
         <div
-          class="text-2xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400"
+          class="text-2xl font-bold tracking-tighter bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent uppercase font-headline"
         >
-          ELECTRIC STAGE
+          TICKETMONSTER
         </div>
         <nav class="hidden md:flex items-center space-x-8">
           <NuxtLink
@@ -129,7 +131,8 @@
                 <span class="material-symbols-outlined text-secondary"
                   >calendar_today</span
                 >
-                <span class="whitespace-nowrap font-headline font-medium text-sm"
+                <span
+                  class="whitespace-nowrap font-headline font-medium text-sm"
                   >Any Date</span
                 >
               </button>
@@ -139,7 +142,8 @@
                 <span class="material-symbols-outlined text-tertiary"
                   >location_on</span
                 >
-                <span class="whitespace-nowrap font-headline font-medium text-sm"
+                <span
+                  class="whitespace-nowrap font-headline font-medium text-sm"
                   >All Venues</span
                 >
               </button>
