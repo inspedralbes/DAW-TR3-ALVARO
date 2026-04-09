@@ -10,6 +10,10 @@
         background: rgba(34, 37, 50, 0.6);
         backdrop-filter: blur(20px);
     }
+    .seat-grid {
+        display: grid;
+        gap: 6px;
+    }
     .seat-glow-available { box-shadow: 0 0 8px rgba(131, 251, 165, 0.3); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
 }

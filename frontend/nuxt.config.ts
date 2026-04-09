@@ -11,6 +11,13 @@ export default defineNuxtConfig({
       ]
     }
   },
+  vite: {
+    server: {
+      watch: {
+        usePolling: true
+      }
+    }
+  },
   css: ['~/assets/css/tailwind.css'],
   runtimeConfig: {
     public: {

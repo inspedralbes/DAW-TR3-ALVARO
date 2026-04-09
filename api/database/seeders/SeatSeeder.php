@@ -18,8 +18,8 @@ class SeatSeeder extends Seeder
             'description' => 'Un evento espectacular de prueba.',
         ]);
 
-        $rows = ['A', 'B', 'C', 'D', 'E'];
-        $numbersPerRow = 10;
+        $rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+        $numbersPerRow = 24;
 
         foreach ($rows as $row) {
             for ($i = 1; $i <= $numbersPerRow; $i++) {
