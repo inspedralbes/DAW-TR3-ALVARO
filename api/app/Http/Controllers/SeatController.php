@@ -138,4 +138,46 @@ class SeatController extends Controller
             ], 409);
         }
     }
+
+    public function myTickets(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'error' => 'No account found for this email.',
+            ], 404);
+        }
+
+        $tickets = Seat::where('user_id', $user->id)
+            ->where('status', 'sold')
+            ->orderBy('row')
+            ->orderBy('number')
+            ->get()
+            ->map(fn($s) => [
+                'id'          => $s->id,
+                'row'         => $s->row,
+                'number'      => $s->number,
+                'label'       => $s->row . $s->number,
+                'price'       => (float) $s->price,
+                'purchased_at'=> $s->updated_at?->toISOString(),
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'user'    => ['name' => $user->name, 'email' => $user->email],
+            'event'   => [
+                'name'    => 'THE VOID – World Tour 2024',
+                'venue'   => 'Stadium Arena, Barcelona',
+                'date'    => 'Nov 15, 2024 • 20:00',
+            ],
+            'tickets' => $tickets,
+            'total'   => $tickets->sum('price'),
+        ]);
+    }
 }

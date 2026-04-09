@@ -23,10 +23,10 @@
             href="#venues"
             >Venues</a
           >
-          <a
+          <NuxtLink
+            to="/my-tickets"
             class="text-zinc-400 hover:text-white transition-colors"
-            href="#"
-            >My Tickets</a
+            >My Tickets</NuxtLink
           >
         </nav>
         <div class="flex items-center space-x-4">
@@ -489,14 +489,15 @@
           >Waitlist</span
         >
       </button>
-      <button
+      <NuxtLink
+        to="/my-tickets"
         class="flex flex-col items-center justify-center text-zinc-500 active:bg-white/5 transition-all active:scale-110 duration-300"
       >
         <span class="material-symbols-outlined">person</span>
         <span class="font-body text-[10px] uppercase tracking-widest mt-1"
-          >Profile</span
+          >My Tickets</span
         >
-      </button>
+      </NuxtLink>
     </nav>
   </div>
 </template>

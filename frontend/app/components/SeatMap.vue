@@ -92,14 +92,14 @@ const processCheckout = async () => {
   if (selectedSeats.value.size === 0 || isProcessing.value) return;
   isProcessing.value = true;
 
-  // Primer paso: Reservar todo el carrito localmente en Backend
   const config = useRuntimeConfig();
+  const router = useRouter();
+
   try {
-    // En un caso real iteraríamos todos para reserve, asumimos llamada individual o iterativa
     for (const seatId of selectedSeats.value) {
       const seat = seatStore.seats.find((s) => s.id === seatId);
-      // Evitamos error 409 si el usuario intentó pagar antes y el DB ya lo bloqueó
-      if (seat && seat.status === 'reserved') continue;
+      // Skip if already reserved by this session
+      if (seat && seat.status === 'reserved' && seat.session_id === seatStore.sessionId) continue;
 
       await $fetch<{ success: boolean }>(
         `${config.public.apiUrl}/api/seats/reserve`,
@@ -110,33 +110,15 @@ const processCheckout = async () => {
       );
     }
 
-    // Finalizar y simular Checkout Masivo
-    const confirmPurchase = confirm(
-      `Se va a proceder al pago de €${totalAmount.value}. ¿Aceptar?`,
-    );
-    if (!confirmPurchase) return;
-
-    const email =
-      prompt("Email de compra:", "pago@cliente.com") || "pago@cliente.com";
-    const name = prompt("Nombre:", "Usuario Ticket") || "Usuario Ticket";
-
-    const response = await $fetch<{ success: boolean }>(
-      `${config.public.apiUrl}/api/seats/checkout`,
-      {
-        method: "POST",
-        body: {
-          seat_ids: Array.from(selectedSeats.value),
-          session_id: seatStore.sessionId,
-          name: name,
-          email: email,
-        },
+    // Navigate to checkout page with seat data
+    await router.push({
+      path: '/checkout',
+      query: {
+        seats: Array.from(selectedSeats.value).join(','),
+        session: seatStore.sessionId,
+        total: totalAmount.value.toString(),
       },
-    );
-
-    if (response.success) {
-      alert("¡Compra finalizada exitosamente!");
-      selectedSeats.value.clear();
-    }
+    });
   } catch (e: any) {
     const status = e.response?.status || e.status;
     const msg = e.response?._data?.error || e.message;
@@ -182,20 +164,20 @@ const getSeatColor = (id: number, status: string) => {
         ELECTRIC STAGE
       </div>
       <div class="hidden md:flex gap-8 items-center">
-        <a
-          href="#"
-          class="font-headline tracking-tight text-slate-400 hover:text-slate-100 transition-colors"
-          >Concerts</a
+        <NuxtLink
+          to="/"
+          class="font-headline tracking-tight text-secondary/80 hover:text-secondary transition-colors"
+          >Concerts</NuxtLink
         >
         <a
-          href="#"
-          class="font-headline tracking-tight text-blue-400 border-b-2 border-blue-500 pb-1"
+          href="/"
+          class="font-headline tracking-tight text-secondary border-b-2 border-secondary pb-1"
           >Venues</a
         >
-        <a
-          href="#"
-          class="font-headline tracking-tight text-slate-400 hover:text-slate-100 transition-colors"
-          >My Tickets</a
+        <NuxtLink
+          to="/my-tickets"
+          class="font-headline tracking-tight text-secondary/80 hover:text-secondary transition-colors"
+          >My Tickets</NuxtLink
         >
       </div>
       <div class="flex items-center gap-4">
@@ -211,16 +193,6 @@ const getSeatColor = (id: number, status: string) => {
     <aside
       class="fixed left-0 top-0 h-screen w-20 border-r border-white/5 bg-slate-900 flex flex-col items-center py-20 gap-8 z-40 hidden md:flex"
     >
-      <div class="flex flex-col items-center gap-2 mb-4">
-        <div
-          class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-highest"
-        >
-          <img
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_58zi2356YZzL437Jvz7PK2aSTEULQDG22sHZJkG6MBm-aBsiLzlFFHwAwV9dIx0uhsifryWsABp91PDg2UEt1DgV0MlI8mygicVBSZtX00mR_Qh1nvGtMbZFQui2MxcN101MnLYqG8LkzCGuJWdxnJ95FkXstYECU3E2_km2Riu8gS-uYBPz1fDphQ4doQ3WvSW76M0wWmMD3WPDqHiEg5xQCxbZYAXFcwu47OoY-etRRhWj3k9Qu73s8kcYOVb0uaVmdTMjnJs"
-            class="w-full h-full object-cover"
-          />
-        </div>
-      </div>
 
       <button
         class="flex flex-col items-center justify-center text-blue-400 bg-blue-500/10 border-r-2 border-blue-500 w-full py-4 transition-all duration-300"
@@ -259,21 +231,6 @@ const getSeatColor = (id: number, status: string) => {
             <p class="text-on-surface-variant font-body text-lg mt-2">
               Stadium Arena • Barcelona, ES
             </p>
-          </div>
-
-          <!-- Countdown Timer -->
-          <div
-            v-show="selectedSeats.size > 0"
-            class="glass-panel rounded-xl px-6 py-4 flex flex-col items-center border border-white/10 shadow-2xl transition-all duration-500"
-          >
-            <span
-              class="font-label text-[10px] tracking-widest text-primary-fixed uppercase mb-1"
-              >Time to purchase</span
-            >
-            <span
-              class="text-4xl font-headline font-bold text-on-background tracking-tight"
-              >~ 00:15</span
-            >
           </div>
         </div>
       </header>
