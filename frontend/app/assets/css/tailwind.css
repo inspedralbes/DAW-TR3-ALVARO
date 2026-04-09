@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .glass-panel {
+        background: rgba(34, 37, 50, 0.6);
+        backdrop-filter: blur(20px);
+    }
+    .seat-glow-available { box-shadow: 0 0 8px rgba(131, 251, 165, 0.3); }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+}
