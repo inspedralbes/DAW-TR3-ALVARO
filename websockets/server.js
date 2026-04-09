@@ -87,7 +87,7 @@ redis.on('message', (channel, message) => {
           } finally {
              activeTimers.delete(seatId);
           }
-        }, 15000); // Demostración rápida: 15 SEGUNDOS (En PROD sería 5 * 60 * 1000)
+        }, 60000); // 60 SEGUNDOS (para dar tiempo a rellenar el prompt)
 
         // Registrar timer activo
         activeTimers.set(seatId, timeoutId);

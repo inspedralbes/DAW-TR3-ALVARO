@@ -14,6 +14,7 @@ const { $socket } = useNuxtApp() as unknown as {
 
 const liveUpdate = ref<LiveUpdate>({ message: "", show: false });
 const selectedSeats = ref<Set<number>>(new Set());
+const isProcessing = ref(false);
 
 // Precios harcodeado a 145€ base as per HTML,
 // o podemos usar 50 € de bd, asumiremos dinámico
@@ -88,7 +89,8 @@ const handleSeatClick = async (seatId: number) => {
 };
 
 const processCheckout = async () => {
-  if (selectedSeats.value.size === 0) return;
+  if (selectedSeats.value.size === 0 || isProcessing.value) return;
+  isProcessing.value = true;
 
   // Primer paso: Reservar todo el carrito localmente en Backend
   const config = useRuntimeConfig();
@@ -135,13 +137,17 @@ const processCheckout = async () => {
       alert("¡Compra finalizada exitosamente!");
       selectedSeats.value.clear();
     }
-  } catch (e: unknown) {
-    const err = e as { status?: number; message?: string };
-    if (err.status === 409 || err.status === 403) {
-      alert("Error en checkout: " + (err.message || "Asientos conflictivos."));
+  } catch (e: any) {
+    const status = e.response?.status || e.status;
+    const msg = e.response?._data?.error || e.message;
+    if (status === 409 || status === 403) {
+      alert("Error (Operación Abortada): " + msg);
     } else {
       console.error("Error Checkout General", e);
+      alert("Hubo un error procesando tu solicitud.");
     }
+  } finally {
+    isProcessing.value = false;
   }
 };
 
@@ -171,7 +177,7 @@ const getSeatColor = (id: number, status: string) => {
       class="fixed top-0 w-full z-50 bg-slate-950/60 backdrop-blur-xl shadow-2xl shadow-black/40 flex justify-between items-center px-6 py-4"
     >
       <div
-        class="text-2xl font-bold tracking-tighter text-blue-500 uppercase font-headline"
+        class="text-2xl font-bold tracking-tighter electric-gradient bg-clip-text text-transparent uppercase font-headline"
       >
         ELECTRIC STAGE
       </div>
@@ -316,10 +322,10 @@ const getSeatColor = (id: number, status: string) => {
         >
           <!-- Stage -->
           <div
-            class="w-full h-12 bg-gradient-to-r from-primary-dim to-primary rounded-full mb-20 flex items-center justify-center shadow-[0_0_40px_rgba(55,102,255,0.4)]"
+            class="w-full h-12 electric-gradient rounded-full mb-20 flex items-center justify-center neon-border"
           >
             <span
-              class="font-headline text-on-primary-fixed font-bold tracking-[0.5em] text-sm uppercase"
+              class="font-headline text-on-primary font-bold tracking-[0.5em] text-sm uppercase"
               >STAGE</span
             >
           </div>
@@ -438,15 +444,15 @@ const getSeatColor = (id: number, status: string) => {
 
         <button
           @click="processCheckout()"
-          :disabled="selectedSeats.size === 0"
+          :disabled="selectedSeats.size === 0 || isProcessing"
           :class="[
             'w-full py-5 rounded-xl font-headline font-bold text-lg uppercase tracking-widest transition-all',
-            selectedSeats.size > 0
-              ? 'bg-gradient-to-br from-primary-dim to-primary text-on-primary-fixed shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95'
-              : 'bg-surface-container-highest text-outline cursor-not-allowed',
+            selectedSeats.size > 0 && !isProcessing
+              ? 'electric-gradient text-white shadow-[0_0_30px_rgba(191,126,255,0.3)] hover:scale-[1.02] active:scale-95'
+              : 'bg-surface-container-highest text-outline cursor-not-allowed opacity-70',
           ]"
         >
-          Proceed to Payment
+          {{ isProcessing ? 'Processing...' : 'Proceed to Payment' }}
         </button>
         <p class="text-center text-[10px] text-outline mt-4 font-body">
           Transaction fees via Laravel API processed securely.
@@ -506,12 +512,10 @@ const getSeatColor = (id: number, status: string) => {
 
     <!-- Map View Background Detail -->
     <div
-      class="fixed inset-0 -z-10 opacity-5 pointer-events-none overflow-hidden"
+      class="fixed inset-0 -z-10 opacity-20 pointer-events-none overflow-hidden blur-[80px]"
     >
-      <img
-        class="w-full h-full object-cover"
-        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpXSV3inu8M2its61dHB8Jgl8UKdABHsf8j3JHorO56WRiBp4NgLDZXlh99KXyTe2dk5EfrCCEiQLh5_7ehQz5-dOZrIA3M1e1MEGbEiFAjegCMJghpZ26m73cndvwWCq_lDTpUiM3QKzmizCYfiBgIK_pnT_bh-62uMROIJ_MWDl6zpbsd90hUp6qURbNCrf5P9x09bcl2vfsCD7NCcu1Xifl-2cjsHAppvBszf7weLqfp5IoE42tqmVDJnOXaC2_1D9YVHl8jk0"
-      />
+      <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary rounded-full mix-blend-screen opacity-30"></div>
+      <div class="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-tertiary rounded-full mix-blend-screen opacity-20"></div>
     </div>
   </div>
 </template>

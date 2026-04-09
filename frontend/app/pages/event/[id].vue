@@ -1,0 +1,3 @@
+<template>
+  <SeatMap />
+</template>
