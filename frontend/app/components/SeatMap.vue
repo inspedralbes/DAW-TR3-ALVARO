@@ -3,7 +3,7 @@ import { onMounted, onUnmounted } from 'vue'
 import { useSeatStore } from '~/stores/seatStore'
 
 const seatStore = useSeatStore()
-const { $socket } = useNuxtApp()
+const { $socket } = useNuxtApp() as unknown as { $socket: import('socket.io-client').Socket }
 
 onMounted(async () => {
   // Generar un session_id si no existe
@@ -38,7 +38,8 @@ const reserveSeat = async (seatId: number) => {
     if (response.success) {
       console.log('Reserva confirmada')
     }
-  } catch (err: any) {
+  } catch (e: unknown) {
+    const err = e as { status?: number, message?: string }
     if (err.status === 409) {
       alert('¡Demasiado tarde! El asiento ya no está disponible.')
     } else {
