@@ -5,6 +5,17 @@ import { useSeatStore } from "~/stores/seatStore";
 const seatStore = useSeatStore();
 const { $socket } = useNuxtApp();
 
+// Unified toast notification system
+const toast = ref({ show: false, message: "", title: "", type: "info" });
+let toastTimer = null;
+
+const showToast = (title, message, type = "info", duration = 4000) => {
+  if (toastTimer) clearTimeout(toastTimer);
+  toast.value = { show: true, title, message, type };
+  toastTimer = setTimeout(() => { toast.value.show = false; }, duration);
+};
+
+// Keep liveUpdate for backward compat (seat conflict events)
 const liveUpdate = ref({ message: "", show: false });
 const selectedSeats = ref(new Set());
 const isProcessing = ref(false);
@@ -67,7 +78,11 @@ const handleSeatClick = async (seatId) => {
   }
 
   if (selectedSeats.value.size >= 5) {
-    alert("Puedes reservar un máximo de 5 entradas.");
+    showToast(
+      "Límite de entradas alcanzado",
+      "Solo puedes seleccionar un máximo de 5 entradas por compra.",
+      "warning"
+    );
     return;
   }
 
@@ -111,10 +126,10 @@ const processCheckout = async () => {
     const status = e.response?.status || e.status;
     const msg = e.response?._data?.error || e.message;
     if (status === 409 || status === 403) {
-      alert("Error (Operación Abortada): " + msg);
+      showToast("Operación abortada", msg, "error");
     } else {
       console.error("Error Checkout General", e);
-      alert("Hubo un error procesando tu solicitud.");
+      showToast("Error inesperado", "Hubo un error procesando tu solicitud.", "error");
     }
   } finally {
     isProcessing.value = false;
@@ -407,29 +422,83 @@ const getSeatColor = (id, status) => {
       </div>
     </aside>
 
-    <!-- Toast Notification -->
-    <div
-      v-if="liveUpdate.show"
-      class="fixed bottom-24 right-6 md:bottom-10 md:right-[420px] z-[100] max-w-sm animate-bounce"
-    >
+    <!-- Seat conflict toast (live update from socket) -->
+    <Transition name="toast">
       <div
-        class="glass-panel border-l-4 border-error p-5 rounded-r-xl shadow-2xl flex items-start gap-4"
+        v-if="liveUpdate.show"
+        class="fixed bottom-28 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:bottom-10 md:right-[420px] z-[100] w-[340px] max-w-[90vw]"
       >
-        <span class="material-symbols-outlined text-error">error</span>
-        <div>
-          <h4 class="text-sm font-bold font-headline mb-1">Live Update</h4>
-          <p class="text-xs text-on-surface-variant font-body">
-            {{ liveUpdate.message }}
-          </p>
+        <div class="glass-panel border-l-4 border-error p-4 rounded-xl shadow-2xl flex items-start gap-3">
+          <span class="material-symbols-outlined text-error mt-0.5">sensors</span>
+          <div class="flex-1">
+            <h4 class="text-sm font-bold font-headline mb-0.5 text-on-surface">Actualización en vivo</h4>
+            <p class="text-xs text-on-surface-variant font-body">{{ liveUpdate.message }}</p>
+          </div>
+          <button @click="liveUpdate.show = false" class="material-symbols-outlined text-outline text-base hover:text-white transition-colors">close</button>
         </div>
-        <button
-          @click="liveUpdate.show = false"
-          class="material-symbols-outlined text-outline text-sm"
-        >
-          close
-        </button>
       </div>
-    </div>
+    </Transition>
+
+    <!-- Unified toast (warning / error / info) -->
+    <Transition name="toast">
+      <div
+        v-if="toast.show"
+        class="fixed bottom-28 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:bottom-10 md:right-[420px] z-[110] w-[360px] max-w-[90vw]"
+      >
+        <div
+          class="glass-panel p-5 rounded-2xl shadow-2xl flex items-start gap-4 border-l-4"
+          :class="{
+            'border-tertiary': toast.type === 'warning',
+            'border-error': toast.type === 'error',
+            'border-primary': toast.type === 'info',
+          }"
+        >
+          <!-- Icon -->
+          <div
+            class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            :class="{
+              'bg-tertiary/20': toast.type === 'warning',
+              'bg-error/20': toast.type === 'error',
+              'bg-primary/20': toast.type === 'info',
+            }"
+          >
+            <span
+              class="material-symbols-outlined text-xl"
+              :class="{
+                'text-tertiary': toast.type === 'warning',
+                'text-error': toast.type === 'error',
+                'text-primary': toast.type === 'info',
+              }"
+            >
+              {{ toast.type === 'warning' ? 'warning' : toast.type === 'error' ? 'error' : 'info' }}
+            </span>
+          </div>
+
+          <!-- Content -->
+          <div class="flex-1 min-w-0">
+            <h4 class="text-sm font-bold font-headline mb-1 text-on-surface">{{ toast.title }}</h4>
+            <p class="text-xs text-on-surface-variant font-body leading-relaxed">{{ toast.message }}</p>
+          </div>
+
+          <!-- Close -->
+          <button
+            @click="toast.show = false"
+            class="material-symbols-outlined text-outline hover:text-white transition-colors text-base flex-shrink-0 mt-0.5"
+          >
+            close
+          </button>
+        </div>
+
+        <!-- Progress bar auto-dismiss -->
+        <div class="h-0.5 rounded-full mx-5 mt-1 animate-shrink"
+          :class="{
+            'bg-tertiary/60': toast.type === 'warning',
+            'bg-error/60': toast.type === 'error',
+            'bg-primary/60': toast.type === 'info',
+          }"
+        ></div>
+      </div>
+    </Transition>
 
     <!-- Mobile BottomNav -->
     <nav
