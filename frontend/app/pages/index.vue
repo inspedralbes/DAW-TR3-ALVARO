@@ -506,7 +506,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 useHead({
   title: "ELECTRIC STAGE | THE VOID World Tour",
   meta: [

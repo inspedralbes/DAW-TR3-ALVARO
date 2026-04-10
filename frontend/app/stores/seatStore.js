@@ -1,18 +1,10 @@
 import { defineStore } from 'pinia'
 
-interface Seat {
-  id: number
-  row: string
-  number: number
-  status: 'available' | 'reserved' | 'sold'
-  price: number
-}
-
 export const useSeatStore = defineStore('seatStore', {
   state: () => ({
-    seats: [] as Seat[],
+    seats: [],
     loading: false,
-    error: null as string | null,
+    error: null,
     sessionId: ''
   }),
 
@@ -21,23 +13,23 @@ export const useSeatStore = defineStore('seatStore', {
       this.loading = true
       try {
         const config = useRuntimeConfig()
-        const data = await $fetch<Seat[]>(`${config.public.apiUrl}/api/seats`)
+        const data = await $fetch(`${config.public.apiUrl}/api/seats`)
         this.seats = data
-      } catch (err: any) {
+      } catch (err) {
         this.error = err.message
       } finally {
         this.loading = false
       }
     },
 
-    updateSeat(seatId: number, status: Seat['status']) {
+    updateSeat(seatId, status) {
       const seat = this.seats.find(s => s.id === seatId)
       if (seat) {
         seat.status = status
       }
     },
 
-    setSessionId(id: string) {
+    setSessionId(id) {
       this.sessionId = id
     }
   }

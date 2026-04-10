@@ -1,19 +1,12 @@
-<script setup lang="ts">
+<script setup>
 import { onMounted, onUnmounted, ref, computed } from "vue";
 import { useSeatStore } from "~/stores/seatStore";
 
-interface LiveUpdate {
-  message: string;
-  show: boolean;
-}
-
 const seatStore = useSeatStore();
-const { $socket } = useNuxtApp() as unknown as {
-  $socket: import("socket.io-client").Socket;
-};
+const { $socket } = useNuxtApp();
 
-const liveUpdate = ref<LiveUpdate>({ message: "", show: false });
-const selectedSeats = ref<Set<number>>(new Set());
+const liveUpdate = ref({ message: "", show: false });
+const selectedSeats = ref(new Set());
 const isProcessing = ref(false);
 
 // Precios harcodeado a 145€ base as per HTML,
@@ -37,41 +30,34 @@ onMounted(async () => {
 
   await seatStore.fetchSeats();
 
-  $socket.on(
-    "seat_updated",
-    (data: {
-      seat_id: number;
-      status: "available" | "reserved" | "sold";
-      session_id: string | null;
-    }) => {
-      // Si nos lo quitaron
-      if (
-        data.status === "reserved" &&
-        data.session_id !== seatStore.sessionId
-      ) {
-        if (selectedSeats.value.has(data.seat_id)) {
-          selectedSeats.value.delete(data.seat_id);
-        }
-        // Show toast
-        liveUpdate.value = {
-          message: `Alguien acaba de reservar un asiento.`,
-          show: true,
-        };
-        setTimeout(() => {
-          liveUpdate.value.show = false;
-        }, 3000);
+  $socket.on("seat_updated", (data) => {
+    // Si nos lo quitaron
+    if (
+      data.status === "reserved" &&
+      data.session_id !== seatStore.sessionId
+    ) {
+      if (selectedSeats.value.has(data.seat_id)) {
+        selectedSeats.value.delete(data.seat_id);
       }
+      // Show toast
+      liveUpdate.value = {
+        message: `Alguien acaba de reservar un asiento.`,
+        show: true,
+      };
+      setTimeout(() => {
+        liveUpdate.value.show = false;
+      }, 3000);
+    }
 
-      seatStore.updateSeat(data.seat_id, data.status);
-    },
-  );
+    seatStore.updateSeat(data.seat_id, data.status);
+  });
 });
 
 onUnmounted(() => {
   $socket.off("seat_updated");
 });
 
-const handleSeatClick = async (seatId: number) => {
+const handleSeatClick = async (seatId) => {
   const seat = seatStore.seats.find((s) => s.id === seatId);
   if (!seat || seat.status !== "available") return;
 
@@ -106,13 +92,10 @@ const processCheckout = async () => {
       )
         continue;
 
-      await $fetch<{ success: boolean }>(
-        `${config.public.apiUrl}/api/seats/reserve`,
-        {
-          method: "POST",
-          body: { seat_id: seatId, session_id: seatStore.sessionId },
-        },
-      );
+      await $fetch(`${config.public.apiUrl}/api/seats/reserve`, {
+        method: "POST",
+        body: { seat_id: seatId, session_id: seatStore.sessionId },
+      });
     }
 
     // Navigate to checkout page with seat data
@@ -124,7 +107,7 @@ const processCheckout = async () => {
         total: totalAmount.value.toString(),
       },
     });
-  } catch (e: any) {
+  } catch (e) {
     const status = e.response?.status || e.status;
     const msg = e.response?._data?.error || e.message;
     if (status === 409 || status === 403) {
@@ -138,7 +121,7 @@ const processCheckout = async () => {
   }
 };
 
-const getSeatColor = (id: number, status: string) => {
+const getSeatColor = (id, status) => {
   if (selectedSeats.value.has(id)) {
     return "bg-primary scale-110";
   }

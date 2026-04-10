@@ -341,7 +341,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 useHead({
   title: "My Tickets | TICKETMONSTER",
   htmlAttrs: { class: "dark", lang: "en" },
@@ -361,28 +361,11 @@ useHead({
   ],
 });
 
-interface Ticket {
-  id: number;
-  row: string;
-  number: number;
-  label: string;
-  price: number;
-  purchased_at: string;
-}
-
-interface TicketsResult {
-  success: boolean;
-  user: { name: string; email: string };
-  event: { name: string; venue: string; date: string };
-  tickets: Ticket[];
-  total: number;
-}
-
 const config = useRuntimeConfig();
 const email = ref("");
 const loading = ref(false);
-const error = ref<string | null>(null);
-const result = ref<TicketsResult | null>(null);
+const error = ref(null);
+const result = ref(null);
 
 const fetchTickets = async () => {
   loading.value = true;
@@ -390,7 +373,7 @@ const fetchTickets = async () => {
   result.value = null;
 
   try {
-    const data = await $fetch<TicketsResult>(
+    const data = await $fetch(
       `${config.public.apiUrl}/api/tickets`,
       { query: { email: email.value } },
     );
@@ -399,7 +382,7 @@ const fetchTickets = async () => {
     } else {
       error.value = "No tickets found for this email.";
     }
-  } catch (e: any) {
+  } catch (e) {
     const msg = e.response?._data?.error || e.message;
     error.value = msg || "Something went wrong. Please try again.";
   } finally {
@@ -407,7 +390,7 @@ const fetchTickets = async () => {
   }
 };
 
-const formatDate = (iso: string) => {
+const formatDate = (iso) => {
   return new Date(iso).toLocaleString("en-GB", {
     day: "2-digit",
     month: "short",

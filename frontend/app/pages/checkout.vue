@@ -433,7 +433,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 useHead({
   title: "Checkout | TICKETMONSTER",
   htmlAttrs: { class: "dark", lang: "en" },
@@ -454,8 +454,8 @@ const route = useRoute();
 const config = useRuntimeConfig();
 
 // Parse query params sent from SeatMap
-const seatIds = computed<number[]>(() => {
-  const raw = route.query.seats as string;
+const seatIds = computed(() => {
+  const raw = route.query.seats;
   if (!raw) return [];
   return raw
     .split(",")
@@ -463,8 +463,8 @@ const seatIds = computed<number[]>(() => {
     .filter((n) => !isNaN(n) && n > 0);
 });
 
-const sessionId = computed(() => (route.query.session as string) || "");
-const totalFromQuery = computed(() => route.query.total as string || "0");
+const sessionId = computed(() => route.query.session || "");
+const totalFromQuery = computed(() => route.query.total || "0");
 const pricePerSeat = 50;
 const subtotal = computed(() => seatIds.value.length * pricePerSeat);
 const serviceFee = computed(() => Math.round(subtotal.value * 0.08 * 100) / 100);
@@ -474,7 +474,7 @@ const grandTotal = computed(() => subtotal.value + serviceFee.value);
 const TIMEOUT_SECONDS = 600;
 const timeLeft = ref(TIMEOUT_SECONDS);
 const isExpired = ref(false);
-let countdownInterval: ReturnType<typeof setInterval> | null = null;
+let countdownInterval = null;
 
 const formattedTime = computed(() => {
   const m = Math.floor(timeLeft.value / 60)
@@ -488,7 +488,7 @@ onMounted(() => {
   countdownInterval = setInterval(() => {
     timeLeft.value--;
     if (timeLeft.value <= 0) {
-      clearInterval(countdownInterval!);
+      clearInterval(countdownInterval);
       isExpired.value = true;
     }
   }, 1000);
@@ -515,15 +515,13 @@ const isSubmitting = ref(false);
 const isSuccess = ref(false);
 const confirmationCode = ref("");
 
-const formatCard = (e: Event) => {
-  const input = e.target as HTMLInputElement;
-  let val = input.value.replace(/\D/g, "").substring(0, 16);
+const formatCard = (e) => {
+  let val = e.target.value.replace(/\D/g, "").substring(0, 16);
   form.cardNumber = val.replace(/(.{4})/g, "$1 ").trim();
 };
 
-const formatExpiry = (e: Event) => {
-  const input = e.target as HTMLInputElement;
-  let val = input.value.replace(/\D/g, "").substring(0, 4);
+const formatExpiry = (e) => {
+  let val = e.target.value.replace(/\D/g, "").substring(0, 4);
   if (val.length >= 2) val = val.substring(0, 2) + "/" + val.substring(2);
   form.expiry = val;
 };
@@ -542,7 +540,7 @@ const submitCheckout = async () => {
   isSubmitting.value = true;
 
   try {
-    const response = await $fetch<{ success: boolean }>(
+    const response = await $fetch(
       `${config.public.apiUrl}/api/seats/checkout`,
       {
         method: "POST",
@@ -556,12 +554,12 @@ const submitCheckout = async () => {
     );
 
     if (response.success) {
-      clearInterval(countdownInterval!);
+      clearInterval(countdownInterval);
       confirmationCode.value =
         "ES-" + Math.random().toString(36).toUpperCase().substring(2, 10);
       isSuccess.value = true;
     }
-  } catch (e: any) {
+  } catch (e) {
     const msg = e.response?._data?.error || e.message;
     alert("Payment failed: " + msg);
   } finally {
