@@ -426,7 +426,7 @@ const getSeatColor = (id, status) => {
     <Transition name="toast">
       <div
         v-if="liveUpdate.show"
-        class="fixed bottom-28 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:bottom-10 md:right-[420px] z-[100] w-[340px] max-w-[90vw]"
+        class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] w-[340px] max-w-[90vw]"
       >
         <div class="glass-panel border-l-4 border-error p-4 rounded-xl shadow-2xl flex items-start gap-3">
           <span class="material-symbols-outlined text-error mt-0.5">sensors</span>
@@ -443,7 +443,7 @@ const getSeatColor = (id, status) => {
     <Transition name="toast">
       <div
         v-if="toast.show"
-        class="fixed bottom-28 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:bottom-10 md:right-[420px] z-[110] w-[360px] max-w-[90vw]"
+        class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[110] w-[360px] max-w-[90vw]"
       >
         <div
           class="glass-panel p-5 rounded-2xl shadow-2xl flex items-start gap-4 border-l-4"

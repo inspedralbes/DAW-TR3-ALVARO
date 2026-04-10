@@ -74,33 +74,34 @@
             >
               <span
                 class="font-headline text-primary text-xs font-bold tracking-[0.2em] uppercase"
-                >Featured Event</span
+                >Esdeveniment Destacat</span
               >
             </div>
             <h1
               class="font-headline text-6xl md:text-9xl font-black italic tracking-tighter leading-none mb-8"
             >
               <span
-                class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary text-glow-primary"
-                >THE VOID</span
-              ><br />
-              <span
                 class="text-transparent bg-clip-text bg-gradient-to-r from-tertiary to-cyan-600 text-glow-tertiary"
-                >WORLD TOUR 2024</span
+                >{{
+                  featuredEvent
+                    ? featuredEvent.venue || formatEventDate(featuredEvent.date)
+                    : "COMPRA LES TEVES ENTRADES"
+                }}</span
               >
             </h1>
             <div class="flex flex-wrap gap-4 items-center">
               <NuxtLink
-                to="/event/1"
+                :to="featuredEvent ? `/event/${featuredEvent.id}` : '/'"
                 class="px-8 py-4 signature-pulse text-on-secondary-fixed font-black text-lg uppercase tracking-tighter rounded-xl shadow-[0_0_20px_rgba(255,171,243,0.4)] hover:scale-105 transition-transform active:scale-95 flex items-center gap-3"
               >
-                Buy Tickets
+                Comprar Entrades
                 <span class="material-symbols-outlined">arrow_forward</span>
               </NuxtLink>
               <button
+                @click="scrollToEvents"
                 class="px-8 py-4 bg-surface-container-highest text-primary font-bold rounded-xl text-lg border border-outline-variant/20 backdrop-blur-xl hover:bg-white/10 transition-all"
               >
-                View Tour Dates
+                Veure tots els events
               </button>
             </div>
           </div>
@@ -157,193 +158,152 @@
         </div>
       </section>
 
-      <!-- Upcoming Concerts Grid -->
-      <section class="container mx-auto px-6 py-24">
+      <!-- Upcoming Events Grid -->
+      <section id="events" class="container mx-auto px-6 py-24">
         <div class="flex justify-between items-end mb-12">
           <div>
             <h2
               class="font-headline text-4xl font-bold tracking-tight text-on-surface uppercase"
             >
-              Upcoming <span class="text-primary italic">Events</span>
+              Pròxims <span class="text-primary italic">Esdeveniments</span>
             </h2>
             <div
               class="h-1 w-24 bg-gradient-to-r from-primary to-tertiary mt-2"
             ></div>
           </div>
-          <button
+          <NuxtLink
+            to="/admin"
             class="text-tertiary font-headline font-bold flex items-center gap-2 group hover:gap-3 transition-all"
           >
-            View All
+            Gestionar
             <span
               class="material-symbols-outlined group-hover:translate-x-1 transition-transform"
-              >trending_flat</span
+              >settings</span
             >
-          </button>
+          </NuxtLink>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <!-- Concert Card 1 -->
+
+        <!-- Loading state -->
+        <div
+          v-if="pending"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+        >
+          <div
+            v-for="i in 3"
+            :key="i"
+            class="bg-surface-container-low rounded-[2rem] overflow-hidden h-80 animate-pulse border border-outline-variant/10"
+          >
+            <div class="h-64 bg-white/5"></div>
+            <div class="p-6 space-y-3">
+              <div class="h-4 bg-white/5 rounded w-2/3"></div>
+              <div class="h-3 bg-white/5 rounded w-1/2"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div
+          v-else-if="!events || events.length === 0"
+          class="text-center py-24 text-on-surface-variant"
+        >
+          <span class="material-symbols-outlined text-6xl opacity-20 block mb-4"
+            >event_note</span
+          >
+          <p class="text-lg font-medium mb-4">
+            No hi ha esdeveniments disponibles.
+          </p>
           <NuxtLink
-            to="/event/1"
+            to="/admin"
+            class="px-6 py-3 rounded-xl border border-primary/30 text-primary font-bold hover:bg-primary/10 transition-colors inline-block"
+          >
+            Crear un event al panel d'administració
+          </NuxtLink>
+        </div>
+
+        <!-- Events grid -->
+        <div
+          v-else
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+        >
+          <NuxtLink
+            v-for="(event, index) in events"
+            :key="event.id"
+            :to="`/event/${event.id}`"
             class="group relative bg-surface-container-low rounded-[2rem] overflow-hidden flex flex-col transition-all duration-500 hover:-translate-y-2 border border-outline-variant/10"
           >
             <div class="h-64 relative overflow-hidden">
               <img
                 class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                alt="Vibrant pink and purple lighting over a cheering crowd"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-RLxr5rnCQ2jtTgmWsi8RMc1I3UHsZjXplhzwpZjeTajIRSeOPP4mxj-Q3gGH9tDWRa-cdk5hEp2IPv1zNwMwTHx7VlcBZrvdNG-2_mgsB9breqVORnO1Tz40O44O1g8e3tPoaknl0DQfjdXFZPiSPcixfuLK83NlZnRpnjyFaJwzOPd8Z731hh2iLRnOj7ozddfAboP58o-jC0xdKp640qXVIBUyXIWVE7lXfG25YtnxxmbKvD_wHRr23xXWVf-WgHFO5ExfjyA"
+                :alt="event.title"
+                :src="cardImages[index % cardImages.length]"
               />
               <div
                 class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"
               ></div>
+              <!-- Seats count badge -->
               <div class="absolute top-4 left-4 flex gap-2">
                 <span
+                  v-if="event.seats_count > 0"
                   class="signature-pulse px-4 py-1 rounded-full text-[10px] font-black text-on-secondary-fixed uppercase tracking-widest"
-                  >SELLING FAST</span
+                  >{{ event.seats_count }} SEIENTS</span
                 >
               </div>
-              <div class="absolute bottom-4 left-4">
+              <!-- Zone pills -->
+              <div
+                v-if="event.zones?.length"
+                class="absolute bottom-4 left-4 flex gap-1.5"
+              >
                 <div
-                  class="bg-primary/90 text-on-primary px-3 py-1 rounded-lg font-bold text-[10px] uppercase tracking-widest"
+                  v-for="zone in event.zones.slice(0, 2)"
+                  :key="zone.name"
+                  class="px-3 py-1 rounded-lg font-bold text-[10px] uppercase tracking-widest"
+                  :style="{
+                    backgroundColor: zone.color + '33',
+                    color: zone.color,
+                    border: '1px solid ' + zone.color + '55',
+                  }"
                 >
-                  ELECTRONIC
+                  {{ zone.name }}
                 </div>
               </div>
             </div>
             <div class="p-8 flex-1 flex flex-col">
               <div class="flex justify-between items-start mb-4">
                 <h3
-                  class="font-headline text-2xl font-bold text-white group-hover:text-primary transition-colors"
+                  class="font-headline text-2xl font-bold text-white group-hover:text-primary transition-colors line-clamp-1"
                 >
-                  NEON PULSE
+                  {{ event.title }}
                 </h3>
-                <div class="text-right">
+                <div class="text-right ml-3 flex-shrink-0">
                   <p
                     class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest"
                   >
-                    Starts From
+                    Des de
                   </p>
-                  <p class="text-primary font-bold text-lg">€45.00</p>
+                  <p class="text-primary font-bold text-lg">
+                    {{ minPrice(event) }}
+                  </p>
                 </div>
               </div>
               <div class="space-y-2 mb-8 flex-1">
                 <div class="flex items-center gap-2 text-zinc-400 text-sm">
                   <span class="material-symbols-outlined text-xs">event</span>
-                  <span class="font-medium">Nov 15, 2024 • 20:00</span>
+                  <span class="font-medium">{{
+                    formatEventDate(event.date)
+                  }}</span>
                 </div>
-                <div class="flex items-center gap-2 text-zinc-400 text-sm">
+                <div
+                  v-if="event.venue"
+                  class="flex items-center gap-2 text-zinc-400 text-sm"
+                >
                   <span class="material-symbols-outlined text-xs">stadium</span>
-                  <span class="font-medium">Stadium Arena, Barcelona</span>
+                  <span class="font-medium">{{ event.venue }}</span>
                 </div>
               </div>
               <span
                 class="w-full py-4 bg-surface-container-highest border border-primary/20 rounded-full text-primary font-bold hover:bg-primary hover:text-on-primary transition-all flex items-center justify-center gap-2"
               >
-                Find Tickets
-              </span>
-            </div>
-          </NuxtLink>
-
-          <!-- Concert Card 2 -->
-          <NuxtLink
-            to="/event/2"
-            class="group relative bg-surface-container-low rounded-[2rem] overflow-hidden flex flex-col transition-all duration-500 hover:-translate-y-2 border border-outline-variant/10"
-          >
-            <div class="h-64 relative overflow-hidden">
-              <img
-                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                alt="Blue stage lighting creating geometric shapes in the dark"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-3vWJ5LIzyGoNWPS28sKAsmEHFS2tXs2hDTCu87y7QeHH7j2CSC_glYU5W9CX_yHqlN2wGpH6bH8fNCuKerivWDTiFo8G1FgFvI3V93qxB8fHHea7q1Ud-zbQYVwIQp1Jvme-89h_tg1mQnihb2J8nWj8vrq5lUrpoHHSLXsMf8t2va7UDZbxLdLltezDmIxRCyqkVgXxdQvvxkHL3v0IieKQOsedpoUl9ULzhDDqfo93zJ-87wiYLrb5vskJxwULCGaBfgwtEnA"
-              />
-              <div
-                class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"
-              ></div>
-              <div class="absolute bottom-4 left-4">
-                <div
-                  class="bg-tertiary/90 text-on-tertiary px-3 py-1 rounded-lg font-bold text-[10px] uppercase tracking-widest"
-                >
-                  POP ROCKS
-                </div>
-              </div>
-            </div>
-            <div class="p-8 flex-1 flex flex-col">
-              <div class="flex justify-between items-start mb-4">
-                <h3
-                  class="font-headline text-2xl font-bold text-white group-hover:text-tertiary transition-colors"
-                >
-                  LUNAR ECHOES
-                </h3>
-                <div class="text-right">
-                  <p
-                    class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest"
-                  >
-                    Starts From
-                  </p>
-                  <p class="text-primary font-bold text-lg">€89.00</p>
-                </div>
-              </div>
-              <div class="space-y-2 mb-8 flex-1">
-                <div class="flex items-center gap-2 text-zinc-400 text-sm">
-                  <span class="material-symbols-outlined text-xs">event</span>
-                  <span class="font-medium">Nov 22, 2024 • 21:00</span>
-                </div>
-                <div class="flex items-center gap-2 text-zinc-400 text-sm">
-                  <span class="material-symbols-outlined text-xs">stadium</span>
-                  <span class="font-medium">O2 World, Berlin</span>
-                </div>
-              </div>
-              <span
-                class="w-full py-4 bg-surface-container-highest border border-tertiary/20 rounded-full text-tertiary font-bold hover:bg-tertiary hover:text-on-tertiary transition-all flex items-center justify-center gap-2"
-              >
-                Find Tickets
-              </span>
-            </div>
-          </NuxtLink>
-
-          <!-- Concert Card 3 -->
-          <NuxtLink
-            to="/event/3"
-            class="group relative bg-surface-container-low rounded-[2rem] overflow-hidden flex flex-col transition-all duration-500 hover:-translate-y-2 border border-outline-variant/10"
-          >
-            <div class="h-64 relative overflow-hidden">
-              <img
-                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                alt="Rock concert with warm orange stage lights and fans' cell phone lights"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3_sBEv_UPvC8pa2rTpnKD6tu68VnmRDsCfm9C8UEQOnUVyQYyH3xsNldmIvzhQFcJKssHqTm1PPiRurtZpYs1_D5Xx1HngEU4Yd8QbTElyE1zvJ9FvSwEbxuhISHBCnVvuX1BlxMeoG_mcFl9TErRwvG7AeT9RGWYUoBZL8AAjSNDz_074iO5ra1nYA-u1Y0MayDo3SMpMNPpDeiiot33A-TzXtaG7AcKZqHKwj1dXudg0DWDF9l2qd5ttp7fbkC--YX3nUsZV60"
-              />
-              <div
-                class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"
-              ></div>
-            </div>
-            <div class="p-8 flex-1 flex flex-col">
-              <div class="flex justify-between items-start mb-4">
-                <h3
-                  class="font-headline text-2xl font-bold text-white group-hover:text-secondary transition-colors"
-                >
-                  CYBER PUNK
-                </h3>
-                <div class="text-right">
-                  <p
-                    class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest"
-                  >
-                    Starts From
-                  </p>
-                  <p class="text-primary font-bold text-lg">€55.00</p>
-                </div>
-              </div>
-              <div class="space-y-2 mb-8 flex-1">
-                <div class="flex items-center gap-2 text-zinc-400 text-sm">
-                  <span class="material-symbols-outlined text-xs">event</span>
-                  <span class="font-medium">Dec 02, 2024 • 19:30</span>
-                </div>
-                <div class="flex items-center gap-2 text-zinc-400 text-sm">
-                  <span class="material-symbols-outlined text-xs">stadium</span>
-                  <span class="font-medium">Wembley, London</span>
-                </div>
-              </div>
-              <span
-                class="w-full py-4 bg-surface-container-highest border border-secondary/20 rounded-full text-secondary font-bold hover:bg-secondary hover:text-on-secondary transition-all flex items-center justify-center gap-2"
-              >
-                Find Tickets
+                Comprar Entrades
               </span>
             </div>
           </NuxtLink>
@@ -351,6 +311,7 @@
       </section>
 
       <!-- Venue Spotlight -->
+
       <section id="venues" class="container mx-auto px-6 py-24 mb-12">
         <div class="mb-12">
           <h2
@@ -508,12 +469,12 @@
 
 <script setup>
 useHead({
-  title: "ELECTRIC STAGE | THE VOID World Tour",
+  title: "TICKETMONSTER | Esdeveniments en Directe",
   meta: [
     {
       name: "description",
       content:
-        "Buy tickets for the hottest concerts and events. ELECTRIC STAGE — your premium destination for live entertainment.",
+        "Compra entrades per als concerts i esdeveniments més emocionants. TICKETMONSTER — la teva destinació premium per a l'entreteniment en viu.",
     },
   ],
   link: [
@@ -526,6 +487,47 @@ useHead({
       href: "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap",
     },
   ],
-  htmlAttrs: { class: "dark", lang: "en" },
+  htmlAttrs: { class: "dark", lang: "ca" },
 });
+
+const config = useRuntimeConfig();
+
+// Fetch real events from API
+const { data: events, pending } = await useFetch(
+  () => `${config.public.apiUrl}/api/events`,
+  { default: () => [] },
+);
+
+const featuredEvent = computed(() => events.value?.[0] || null);
+
+// Cycle through concert images for cards
+const cardImages = [
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuB-RLxr5rnCQ2jtTgmWsi8RMc1I3UHsZjXplhzwpZjeTajIRSeOPP4mxj-Q3gGH9tDWRa-cdk5hEp2IPv1zNwMwTHx7VlcBZrvdNG-2_mgsB9breqVORnO1Tz40O44O1g8e3tPoaknl0DQfjdXFZPiSPcixfuLK83NlZnRpnjyFaJwzOPd8Z731hh2iLRnOj7ozddfAboP58o-jC0xdKp640qXVIBUyXIWVE7lXfG25YtnxxmbKvD_wHRr23xXWVf-WgHFO5ExfjyA",
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuA-3vWJ5LIzyGoNWPS28sKAsmEHFS2tXs2hDTCu87y7QeHH7j2CSC_glYU5W9CX_yHqlN2wGpH6bH8fNCuKerivWDTiFo8G1FgFvI3V93qxB8fHHea7q1Ud-zbQYVwIQp1Jvme-89h_tg1mQnihb2J8nWj8vrq5lUrpoHHSLXsMf8t2va7UDZbxLdLltezDmIxRCyqkVgXxdQvvxkHL3v0IieKQOsedpoUl9ULzhDDqfo93zJ-87wiYLrb5vskJxwULCGaBfgwtEnA",
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuA3_sBEv_UPvC8pa2rTpnKD6tu68VnmRDsCfm9C8UEQOnUVyQYyH3xsNldmIvzhQFcJKssHqTm1PPiRurtZpYs1_D5Xx1HngEU4Yd8QbTElyE1zvJ9FvSwEbxuhISHBCnVvuX1BlxMeoG_mcFl9TErRwvG7AeT9RGWYUoBZL8AAjSNDz_074iO5ra1nYA-u1Y0MayDo3SMpMNPpDeiiot33A-TzXtaG7AcKZqHKwj1dXudg0DWDF9l2qd5ttp7fbkC--YX3nUsZV60",
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuA8hpNkwm1PcuUuIgJxfpzKypnIBSXUVTFU6ZBB8gnG6TIMVYIt2coX5feoiKgjmLSIdLV49OuzZCxWClFC5wLKUZ3PSM4RfjPbgcCI-YQD76qjQDq6qYkciBnW4jNJyyeFcM07yzxK7-VT_EV1PwWFzVzf79XTKnQa16oFwSB2VvqwBrxUQxLG0vMIa8Gf5oAqs3_OJqbM0fspJW7iTjsZ13krYjX0KF_aBQcUYx-6KJvmTx4ecTzRDRw6XN_fo2vccUwdNJlTvDs",
+];
+
+const formatEventDate = (dateStr) => {
+  if (!dateStr) return "";
+  return new Date(dateStr).toLocaleString("ca-ES", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const minPrice = (event) => {
+  if (event.zones?.length) {
+    const prices = event.zones.map((z) => z.price).filter((p) => p != null);
+    if (prices.length) return `€${Math.min(...prices).toFixed(2)}`;
+  }
+  return "Gratuït";
+};
+
+const scrollToEvents = () => {
+  document.getElementById("events")?.scrollIntoView({ behavior: "smooth" });
+};
 </script>

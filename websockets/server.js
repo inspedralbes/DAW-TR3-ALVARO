@@ -131,8 +131,12 @@ app.get("/api/health", async (req, res) => {
 io.on("connection", (socket) => {
   console.log(`Cliente Nuxt conectado: ${socket.id}`);
 
+  // Broadcast current client count to all (including admin dashboard)
+  io.emit("clients_count", io.engine.clientsCount);
+
   socket.on("disconnect", () => {
     console.log(`Cliente desconectado: ${socket.id}`);
+    io.emit("clients_count", io.engine.clientsCount);
   });
 });
 

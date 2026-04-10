@@ -6,12 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Event extends Model
 {
-    protected $fillable = ['title', 'date', 'description'];
+    protected $fillable = ['title', 'date', 'description', 'venue', 'capacity', 'zones'];
 
     protected function casts(): array
     {
         return [
-            'date' => 'datetime',
+            'date'  => 'datetime',
+            'zones' => 'array',
         ];
     }
 
