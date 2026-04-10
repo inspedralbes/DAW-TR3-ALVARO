@@ -41,14 +41,27 @@
         <span>Temps real actiu</span>
       </div>
 
-      <!-- Back to site -->
-      <NuxtLink
-        to="/"
-        class="flex items-center gap-2 text-xs text-on-surface-variant hover:text-on-surface transition-colors px-3 py-2 rounded-lg hover:bg-white/5"
-      >
-        <span class="material-symbols-outlined text-base">arrow_back</span>
-        <span class="hidden sm:inline">Tornar al lloc</span>
-      </NuxtLink>
+      <!-- User info + Logout -->
+      <div class="flex items-center gap-3">
+        <div class="hidden md:flex items-center gap-2 text-xs text-on-surface-variant bg-white/5 px-3 py-2 rounded-lg">
+          <span class="material-symbols-outlined text-sm text-primary">account_circle</span>
+          <span>{{ authStore.user?.name || 'Admin' }}</span>
+        </div>
+        <NuxtLink
+          to="/"
+          class="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-on-surface transition-colors px-3 py-2 rounded-lg hover:bg-white/5"
+        >
+          <span class="material-symbols-outlined text-base">home</span>
+          <span class="hidden sm:inline">Lloc</span>
+        </NuxtLink>
+        <button
+          @click="handleLogout"
+          class="flex items-center gap-1.5 text-xs text-error/70 hover:text-error hover:bg-error/10 transition-all px-3 py-2 rounded-lg"
+        >
+          <span class="material-symbols-outlined text-base">logout</span>
+          <span class="hidden sm:inline">Sortir</span>
+        </button>
+      </div>
     </header>
 
     <!-- Page content -->
@@ -65,17 +78,26 @@
 import AdminDashboard from '~/components/admin/AdminDashboard.vue'
 import AdminEventManager from '~/components/admin/AdminEventManager.vue'
 
+definePageMeta({ middleware: 'admin' })
+
 useHead({
   title: 'Panel Admin | TICKETMONSTER',
   htmlAttrs: { class: 'dark', lang: 'ca' },
 })
 
 const activeTab = ref('dashboard')
+const authStore = useAuthStore()
+const router = useRouter()
 
 const tabs = [
   { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
   { id: 'events', label: "Esdeveniments", icon: 'event_note' },
 ]
+
+const handleLogout = async () => {
+  await authStore.logout()
+  router.push('/login')
+}
 </script>
 
 <style scoped>

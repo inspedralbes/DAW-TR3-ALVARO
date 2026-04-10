@@ -172,6 +172,7 @@
             ></div>
           </div>
           <NuxtLink
+            v-if="authStore.isAdmin"
             to="/admin"
             class="text-tertiary font-headline font-bold flex items-center gap-2 group hover:gap-3 transition-all"
           >
@@ -213,6 +214,7 @@
             No hi ha esdeveniments disponibles.
           </p>
           <NuxtLink
+            v-if="authStore.isAdmin"
             to="/admin"
             class="px-6 py-3 rounded-xl border border-primary/30 text-primary font-bold hover:bg-primary/10 transition-colors inline-block"
           >
@@ -491,6 +493,7 @@ useHead({
 });
 
 const config = useRuntimeConfig();
+const authStore = useAuthStore();
 
 // Fetch real events from API
 const { data: events, pending } = await useFetch(

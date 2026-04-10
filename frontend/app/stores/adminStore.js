@@ -35,7 +35,10 @@ export const useAdminStore = defineStore('adminStore', {
       this.statsLoading = true
       try {
         const config = useRuntimeConfig()
-        const data = await $fetch(`${config.public.apiUrl}/api/admin/stats`)
+        const authStore = useAuthStore()
+        const data = await $fetch(`${config.public.apiUrl}/api/admin/stats`, {
+          headers: authStore.authHeaders(),
+        })
         this.stats = data.stats
         this.activeReservations = data.active_reservations
       } catch (err) {
@@ -59,8 +62,10 @@ export const useAdminStore = defineStore('adminStore', {
 
     async createEvent(eventData) {
       const config = useRuntimeConfig()
+      const authStore = useAuthStore()
       const data = await $fetch(`${config.public.apiUrl}/api/admin/events`, {
         method: 'POST',
+        headers: authStore.authHeaders(),
         body: eventData,
       })
       await this.fetchEvents()
@@ -69,8 +74,10 @@ export const useAdminStore = defineStore('adminStore', {
 
     async updateEvent(id, eventData) {
       const config = useRuntimeConfig()
+      const authStore = useAuthStore()
       const data = await $fetch(`${config.public.apiUrl}/api/admin/events/${id}`, {
         method: 'PUT',
+        headers: authStore.authHeaders(),
         body: eventData,
       })
       await this.fetchEvents()
@@ -79,16 +86,20 @@ export const useAdminStore = defineStore('adminStore', {
 
     async deleteEvent(id) {
       const config = useRuntimeConfig()
+      const authStore = useAuthStore()
       await $fetch(`${config.public.apiUrl}/api/admin/events/${id}`, {
         method: 'DELETE',
+        headers: authStore.authHeaders(),
       })
       this.events = this.events.filter(e => e.id !== id)
     },
 
     async generateSeats(id) {
       const config = useRuntimeConfig()
+      const authStore = useAuthStore()
       const data = await $fetch(`${config.public.apiUrl}/api/admin/events/${id}/generate-seats`, {
         method: 'POST',
+        headers: authStore.authHeaders(),
       })
       await this.fetchEvents()
       return data
