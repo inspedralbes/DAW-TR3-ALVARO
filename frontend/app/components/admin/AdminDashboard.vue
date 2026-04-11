@@ -24,7 +24,6 @@
           @change="refresh"
           class="bg-surface-container-high border border-outline-variant/30 text-on-surface text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all font-headline font-bold uppercase tracking-wider min-w-[200px]"
         >
-          <option :value="null">Tots els Concerts (Global)</option>
           <option v-for="event in store.events" :key="event.id" :value="event.id">
             {{ event.title }}
           </option>
@@ -387,6 +386,12 @@ const statCards = computed(() => [
 
 onMounted(async () => {
   await store.fetchEvents(); // Cargar la lista de eventos para el desplegable
+  
+  // Seleccionar automáticamente el primer evento si existe
+  if (store.events && store.events.length > 0) {
+    selectedEventId.value = store.events[0].id;
+  }
+  
   await refresh();
 
   $socket.on("clients_count", (count) => {
