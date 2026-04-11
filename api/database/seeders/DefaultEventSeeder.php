@@ -19,21 +19,21 @@ class DefaultEventSeeder extends Seeder
         $zones = [
             [
                 'name'        => 'VIP',
-                'color'       => '#95aaff',
+                'color'       => '#c084fc', // Lila
                 'price'       => 120.00,
                 'rows'        => ['A', 'B'],
                 'seatsPerRow' => 10,
             ],
             [
                 'name'        => 'Preferent',
-                'color'       => '#83fba5',
+                'color'       => '#83fba5', // Verde
                 'price'       => 75.00,
                 'rows'        => ['C', 'D', 'E'],
                 'seatsPerRow' => 15,
             ],
             [
                 'name'        => 'General',
-                'color'       => '#ffd16f',
+                'color'       => '#60a5fa', // Azul
                 'price'       => 40.00,
                 'rows'        => ['F', 'G', 'H', 'I', 'J'],
                 'seatsPerRow' => 20,

@@ -146,7 +146,11 @@ const getSeatStyle = (seat) => {
   }
   switch (seat.status) {
     case 'available': return { backgroundColor: color, opacity: 1 };
-    case 'reserved':  return { backgroundColor: color, opacity: 0.35 };
+    case 'reserved':  return { 
+      backgroundColor: color, 
+      backgroundImage: 'repeating-linear-gradient(45deg, rgba(0,0,0,0.5), rgba(0,0,0,0.5) 4px, transparent 4px, transparent 8px)',
+      opacity: 0.8 
+    };
     case 'sold':      return { backgroundColor: color, opacity: 0.15 };
     default:          return { backgroundColor: color, opacity: 0.5 };
   }
@@ -155,10 +159,11 @@ const getSeatStyle = (seat) => {
 const getSeatClass = (seat) => {
   const base = 'relative w-full aspect-square rounded-sm transition-all duration-200 flex items-center justify-center overflow-hidden';
   if (selectedSeats.value.has(seat.id)) {
-    return `${base} scale-110 ring-2 ring-white shadow-[0_0_8px_rgba(255,255,255,0.6)] cursor-pointer`;
+    // Borde brillante fluorescente para destacar
+    return `${base} scale-110 ring-[3px] ring-[#00ffff] shadow-[0_0_15px_rgba(0,255,255,0.9)] z-10 cursor-pointer`;
   }
   switch (seat.status) {
-    case 'available': return `${base} hover:scale-125 hover:ring-2 hover:ring-white/50 cursor-pointer`;
+    case 'available': return `${base} hover:scale-125 hover:ring-2 hover:ring-[#00ffff]/60 cursor-pointer`;
     case 'reserved':  return `${base} cursor-not-allowed`;
     case 'sold':      return `${base} cursor-not-allowed`;
     default:          return `${base} bg-slate-500 opacity-30`;
@@ -282,11 +287,11 @@ const zoneColors = computed(() => {
           </template>
           <!-- Status indicators -->
           <div class="flex items-center gap-2">
-            <div class="w-4 h-4 rounded-sm bg-primary ring-2 ring-white/50"></div>
+            <div class="w-4 h-4 rounded-sm bg-primary ring-[3px] ring-[#00ffff] shadow-[0_0_10px_rgba(0,255,255,0.8)]"></div>
             <span class="font-label text-xs uppercase tracking-wider text-on-surface-variant">Seleccionat</span>
           </div>
           <div class="flex items-center gap-2">
-            <div class="w-4 h-4 rounded-sm bg-tertiary opacity-60"></div>
+            <div class="w-4 h-4 rounded-sm bg-tertiary" style="background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.5), rgba(0,0,0,0.5) 4px, transparent 4px, transparent 8px);"></div>
             <span class="font-label text-xs uppercase tracking-wider text-on-surface-variant">Reservat</span>
           </div>
           <div class="flex items-center gap-2">
