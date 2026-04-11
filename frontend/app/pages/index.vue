@@ -20,28 +20,59 @@
             class="text-fuchsia-400 border-b-2 border-fuchsia-500 pb-1"
             >Concerts</NuxtLink
           >
-          <a
-            class="text-zinc-400 hover:text-white transition-colors"
-            href="#venues"
-            >Venues</a
-          >
           <NuxtLink
-            to="/my-tickets"
+            :to="authStore.isLoggedIn ? '/my-tickets' : '/login'"
             class="text-zinc-400 hover:text-white transition-colors"
-            >My Tickets</NuxtLink
+            >Les meves entrades</NuxtLink
           >
         </nav>
-        <div class="flex items-center space-x-4">
-          <button
-            class="material-symbols-outlined p-2 text-zinc-400 hover:bg-white/5 transition-all duration-300 rounded-full"
+        <div class="flex items-center space-x-3">
+          <!-- Profile / Auth button -->
+          <NuxtLink
+            v-if="!authStore.isLoggedIn"
+            to="/login"
+            class="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 text-zinc-400 hover:text-white hover:border-fuchsia-500/40 hover:bg-fuchsia-500/5 transition-all text-sm font-bold"
           >
-            search
-          </button>
-          <button
-            class="material-symbols-outlined p-2 text-fuchsia-500 hover:bg-white/5 transition-all duration-300 rounded-full"
-          >
-            account_circle
-          </button>
+            <span class="material-symbols-outlined text-base text-fuchsia-500"
+              >account_circle</span
+            >
+            <span class="hidden sm:inline">Iniciar Sessió</span>
+          </NuxtLink>
+
+          <template v-else>
+            <!-- Admin link -->
+            <NuxtLink
+              v-if="authStore.isAdmin"
+              to="/admin"
+              class="flex items-center gap-2 px-4 py-2 rounded-xl border border-fuchsia-500/30 text-fuchsia-400 hover:bg-fuchsia-500/10 transition-all text-sm font-bold"
+            >
+              <span class="material-symbols-outlined text-base"
+                >admin_panel_settings</span
+              >
+              <span class="hidden sm:inline">Admin</span>
+            </NuxtLink>
+
+            <!-- User chip -->
+            <div
+              v-else
+              class="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 text-zinc-400 text-sm"
+            >
+              <span class="material-symbols-outlined text-base text-fuchsia-500"
+                >account_circle</span
+              >
+              <span class="hidden sm:inline">{{ authStore.user?.name }}</span>
+            </div>
+
+            <!-- Logout button (always visible when logged in) -->
+            <button
+              @click="handleLogout"
+              title="Tancar sessió"
+              class="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 text-zinc-500 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/5 transition-all text-sm font-bold"
+            >
+              <span class="material-symbols-outlined text-base">logout</span>
+              <span class="hidden sm:inline">Sortir</span>
+            </button>
+          </template>
         </div>
       </div>
       <div
@@ -85,7 +116,7 @@
                 >{{
                   featuredEvent
                     ? featuredEvent.venue || formatEventDate(featuredEvent.date)
-                    : "COMPRA LES TEVES ENTRADES"
+                    : "Palau Sant Jordi, Barcelona"
                 }}</span
               >
             </h1>
@@ -311,78 +342,6 @@
           </NuxtLink>
         </div>
       </section>
-
-      <!-- Venue Spotlight -->
-
-      <section id="venues" class="container mx-auto px-6 py-24 mb-12">
-        <div class="mb-12">
-          <h2
-            class="font-headline text-4xl font-bold tracking-tight text-on-surface uppercase"
-          >
-            Venue <span class="text-secondary italic">Spotlight</span>
-          </h2>
-          <div
-            class="h-1 w-24 bg-gradient-to-r from-secondary to-cyan-400 mt-2"
-          ></div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:h-[500px]">
-          <div
-            class="md:col-span-2 relative rounded-[2.5rem] overflow-hidden group cursor-pointer border border-white/5 h-64 md:h-full"
-          >
-            <img
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              alt="Ultra-modern glass concert hall illuminated at night"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhPJg1NwfTeyuTUlWzfgpzx_b_Hgvvn2Yb0nwrimwBgRgRvPcD2wR3FVDkrJglqwUaFB2Yh1edI6H7rpi1xa8te9joRpcK3mzqXPw7ezh0c3wksWKXldEkhSAxSAlh-wBQFqbn_Tq-q2mL1_Zjejk8gawBk14DoU-51-KBOUdhlzCpZ5l9VPyLKbhx_Zmrcqyj1OkwNIXTPaCCWXAEzrpYjOrNhG2E7U95N_ODFDTZ_F-z5lFqbx5-VCBFswr2tgUS_CmjL5T1WxE"
-            />
-            <div
-              class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent flex flex-col justify-end p-10"
-            >
-              <h4
-                class="text-2xl font-headline font-black italic text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary"
-              >
-                NEON DOME
-              </h4>
-              <p class="text-sm text-zinc-400">Singapore • 15,000 Seats</p>
-            </div>
-          </div>
-          <div
-            class="relative rounded-[2.5rem] overflow-hidden group cursor-pointer border border-white/5 h-64 md:h-full"
-          >
-            <img
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              alt="Industrial warehouse venue converted into a high-tech night club"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgZAC3ZhyOAzIYlBzBCESjsBN5lwhuIzItVPFicc1KeuSruRbeYoVb5yb_fmj6H6o_kByIIdr_HED2lBecj-mTaM5d36xr8aiCfQtwTdo-o-YAtxpE8LizOxlsIKPXnK30YG9MHkb7Rnnz2QAMM69ldtuAFAv8KHplHkJM5UYyr61fyx-lckrJpSzwRaw3T5rk5QYT7GcoD6phY8-abeWr_KB7Esbuhnj0_RCMUphlgclAz4N4jYtrg_b9Sgo00GQff_q3xcE1us8"
-            />
-            <div
-              class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent flex flex-col justify-end p-8"
-            >
-              <h4
-                class="text-xl font-headline font-black italic text-transparent bg-clip-text bg-gradient-to-r from-tertiary to-cyan-500"
-              >
-                THE HANGAR
-              </h4>
-              <p class="text-xs text-zinc-400">Berlin</p>
-            </div>
-          </div>
-          <div
-            class="relative rounded-[2.5rem] overflow-hidden group cursor-pointer border border-white/5 h-64 md:h-full"
-          >
-            <img
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              alt="Classic grand opera house with gold detailing and red velvet seats"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBySDsqLqgBcAj2FfHMQFIEJAbqDCQwpoubtOJRBRZ0qVWwHEQ5EjMk0IWPouyvC4qI7umUMRX4UlwXlD1ZgCdtwyekPawvCgyE6RvyvLKK_p0eN_Zo_ZFJXC80Rw_6HqsApzJ5UwKk_Q2YFH7YBmk813NGyWGnlrEi9aQ2HVUQ_a7h6w-c1cVhOCZW6k-lotyUFTS4q0xqmJ062KF5qljqappukzuEQVREX42dUYFh3EPnRw9zcvUmEB3a0UxDOxfOUTxk3n3c8_4"
-            />
-            <div
-              class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent flex flex-col justify-end p-8"
-            >
-              <h4 class="text-xl font-headline font-black italic text-white">
-                GRAND PLAZA
-              </h4>
-              <p class="text-xs text-zinc-400">Paris</p>
-            </div>
-          </div>
-        </div>
-      </section>
     </main>
 
     <!-- Footer -->
@@ -390,11 +349,6 @@
       <div
         class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-12"
       >
-        <div
-          class="text-2xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-cyan-400 font-headline"
-        >
-          ELECTRIC STAGE
-        </div>
         <div
           class="flex flex-wrap justify-center gap-10 font-headline text-sm tracking-wide"
         >
@@ -494,11 +448,18 @@ useHead({
 
 const config = useRuntimeConfig();
 const authStore = useAuthStore();
+const router = useRouter();
 
-// Fetch real events from API
-const { data: events, pending } = await useFetch(
+const handleLogout = async () => {
+  await authStore.logout();
+  router.push("/login");
+};
+
+// Fetch real events from API — server:false forces browser-side fetch
+// (inside Docker, the frontend container can't reach localhost:8000 via SSR)
+const { data: events, pending } = useFetch(
   () => `${config.public.apiUrl}/api/events`,
-  { default: () => [] },
+  { server: false, default: () => [] },
 );
 
 const featuredEvent = computed(() => events.value?.[0] || null);

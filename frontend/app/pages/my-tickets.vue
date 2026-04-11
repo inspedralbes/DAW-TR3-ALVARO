@@ -14,45 +14,46 @@
       ></div>
     </div>
 
-    <!-- TopNavBar (identical to index.vue) -->
+    <!-- TopNavBar -->
     <header
       class="fixed top-0 w-full z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-white/5 font-headline tracking-tight"
     >
       <div
         class="flex justify-between items-center px-6 h-20 w-full max-w-[1920px] mx-auto"
       >
-        <div
+        <NuxtLink
+          to="/"
           class="text-2xl font-bold tracking-tighter bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent uppercase font-headline"
         >
           TICKETMONSTER
-        </div>
+        </NuxtLink>
         <nav class="hidden md:flex items-center space-x-8">
           <NuxtLink
             to="/"
             class="text-zinc-400 hover:text-white transition-colors"
             >Concerts</NuxtLink
           >
-          <a
-            class="text-zinc-400 hover:text-white transition-colors"
-            href="/#venues"
-            >Venues</a
-          >
           <NuxtLink
             to="/my-tickets"
             class="text-fuchsia-400 border-b-2 border-fuchsia-500 pb-1"
-            >My Tickets</NuxtLink
+            >Les meves entrades</NuxtLink
           >
         </nav>
-        <div class="flex items-center space-x-4">
-          <button
-            class="material-symbols-outlined p-2 text-zinc-400 hover:bg-white/5 transition-all duration-300 rounded-full"
+        <div class="flex items-center space-x-3">
+          <div
+            class="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 text-zinc-400 text-sm"
           >
-            search
-          </button>
+            <span class="material-symbols-outlined text-base text-fuchsia-500"
+              >account_circle</span
+            >
+            <span class="hidden sm:inline">{{ authStore.user?.name }}</span>
+          </div>
           <button
-            class="material-symbols-outlined p-2 text-fuchsia-500 hover:bg-white/5 transition-all duration-300 rounded-full"
+            @click="handleLogout"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 text-zinc-500 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/5 transition-all text-sm font-bold"
           >
-            account_circle
+            <span class="material-symbols-outlined text-base">logout</span>
+            <span class="hidden sm:inline">Sortir</span>
           </button>
         </div>
       </div>
@@ -63,335 +64,319 @@
 
     <main class="pt-20 pb-16 min-h-screen">
       <div class="container mx-auto px-6 py-12 max-w-5xl">
-      <!-- Page title -->
-      <div class="mb-10">
-        <h1
-          class="font-headline text-4xl font-bold tracking-tight text-on-surface"
-        >
-          My <span class="text-primary italic">Tickets</span>
-        </h1>
-        <div
-          class="h-1 w-20 bg-gradient-to-r from-primary to-tertiary mt-2"
-        ></div>
-        <p class="text-on-surface-variant mt-3">
-          Enter your email to retrieve the tickets linked to your purchase.
-        </p>
-      </div>
-
-      <!-- Email lookup form -->
-      <form
-        @submit.prevent="fetchTickets"
-        class="glass-panel rounded-2xl p-6 border border-white/10 mb-8"
-      >
-        <div class="flex flex-col sm:flex-row gap-3">
-          <div class="flex-1 relative group">
-            <span
-              class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors"
-              >mail</span
+        <!-- Page title -->
+        <div class="mb-10 flex items-start justify-between">
+          <div>
+            <h1
+              class="font-headline text-4xl font-bold tracking-tight text-on-surface"
             >
-            <input
-              v-model="email"
-              type="email"
-              required
-              placeholder="your@email.com"
-              class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl pl-12 pr-4 py-3 text-on-surface placeholder:text-outline focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/40 transition-all"
-            />
+              Les meves <span class="text-primary italic">Entrades</span>
+            </h1>
+            <div
+              class="h-1 w-20 bg-gradient-to-r from-primary to-tertiary mt-2"
+            ></div>
+            <p class="text-on-surface-variant mt-3 text-sm">
+              Hola,
+              <strong class="text-on-surface">{{
+                authStore.user?.name
+              }}</strong>
+              — aquí tens totes les teves entrades confirmes.
+            </p>
           </div>
           <button
-            type="submit"
+            @click="loadTickets"
             :disabled="loading"
-            class="px-8 py-3 rounded-xl signature-pulse text-white font-headline font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100 whitespace-nowrap"
+            class="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 text-on-surface-variant hover:border-primary/30 hover:text-primary transition-all text-sm"
           >
-            {{ loading ? "Searching..." : "Find My Tickets" }}
+            <span
+              class="material-symbols-outlined text-base"
+              :class="{ 'animate-spin': loading }"
+              >refresh</span
+            >
+            Actualitzar
           </button>
         </div>
-      </form>
 
-      <!-- Error state -->
-      <div
-        v-if="error"
-        class="glass-panel rounded-2xl p-6 border border-error/30 bg-error/5 flex items-center gap-4 mb-8"
-      >
-        <span class="material-symbols-outlined text-error text-3xl">error</span>
-        <div>
-          <p class="font-headline font-bold text-on-surface">
-            No tickets found
-          </p>
-          <p class="text-on-surface-variant text-sm mt-1">{{ error }}</p>
+        <!-- Loading -->
+        <div
+          v-if="loading"
+          class="flex flex-col items-center py-24 gap-4 text-on-surface-variant"
+        >
+          <span
+            class="material-symbols-outlined text-5xl animate-spin opacity-30"
+            >progress_activity</span
+          >
+          <p class="text-sm">Carregant les teves entrades...</p>
         </div>
-      </div>
 
-      <!-- Results -->
-      <transition name="fade">
-        <div v-if="result">
-          <!-- User + Event info card -->
-          <div
-            class="glass-panel rounded-2xl border border-white/10 overflow-hidden mb-6"
+        <!-- Error -->
+        <div
+          v-else-if="error"
+          class="glass-panel rounded-2xl p-6 border border-error/30 bg-error/5 flex items-center gap-4 mb-8"
+        >
+          <span class="material-symbols-outlined text-error text-3xl"
+            >error</span
           >
-            <!-- Event banner -->
-            <div
-              class="h-32 relative overflow-hidden flex items-center justify-center"
-            >
-              <img
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8hpNkwm1PcuUuIgJxfpzKypnIBSXUVTFU6ZBB8gnG6TIMVYIt2coX5feoiKgjmLSIdLV49OuzZCxWClFC5wLKUZ3PSM4RfjPbgcCI-YQD76qjQDq6qYkciBnW4jNJyyeFcM07yzxK7-VT_EV1PwWFzVzf79XTKnQa16oFwSB2VvqwBrxUQxLG0vMIa8Gf5oAqs3_OJqbM0fspJW7iTjsZ13krYjX0KF_aBQcUYx-6KJvmTx4ecTzRDRw6XN_fo2vccUwdNJlTvDs"
-                alt="Concert"
-                class="w-full h-full object-cover opacity-40 scale-105"
-              />
-              <div
-                class="absolute inset-0 bg-gradient-to-r from-background/90 via-background/40 to-background/90"
-              ></div>
-              <div class="absolute inset-0 flex items-center px-8 gap-6">
-                <div
-                  class="w-14 h-14 rounded-full signature-pulse shadow-[0_0_20px_rgba(255,171,243,0.4)] flex items-center justify-center flex-shrink-0"
-                >
-                  <span class="material-symbols-outlined text-white text-2xl"
-                    >confirmation_number</span
-                  >
-                </div>
-                <div>
-                  <p
-                    class="text-xs text-primary font-bold uppercase tracking-widest mb-1"
-                  >
-                    Confirmed Purchase
-                  </p>
-                  <h2
-                    class="font-headline text-2xl font-bold text-on-surface leading-tight"
-                  >
-                    {{ result.event.name }}
-                  </h2>
-                  <p
-                    class="text-on-surface-variant text-sm mt-0.5 flex items-center gap-2"
-                  >
-                    <span class="material-symbols-outlined text-xs"
-                      >stadium</span
-                    >
-                    {{ result.event.venue }}
-                    <span class="text-outline">•</span>
-                    <span class="material-symbols-outlined text-xs">event</span>
-                    {{ result.event.date }}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- User info row -->
-            <div
-              class="px-8 py-4 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-            >
-              <div class="flex items-center gap-3">
-                <div
-                  class="w-9 h-9 rounded-full bg-secondary-container/30 border border-secondary/20 flex items-center justify-center"
-                >
-                  <span class="material-symbols-outlined text-secondary text-sm"
-                    >person</span
-                  >
-                </div>
-                <div>
-                  <p class="font-headline font-bold text-on-surface text-sm">
-                    {{ result.user.name }}
-                  </p>
-                  <p class="text-on-surface-variant text-xs">
-                    {{ result.user.email }}
-                  </p>
-                </div>
-              </div>
-              <div class="flex items-center gap-6">
-                <div class="text-right">
-                  <p
-                    class="text-xs text-on-surface-variant uppercase tracking-wider"
-                  >
-                    Tickets
-                  </p>
-                  <p class="font-headline font-bold text-on-surface">
-                    {{ result.tickets.length }}
-                  </p>
-                </div>
-                <div class="text-right">
-                  <p
-                    class="text-xs text-on-surface-variant uppercase tracking-wider"
-                  >
-                    Total Paid
-                  </p>
-                  <p class="font-headline font-bold text-primary text-lg">
-                    €{{ result.total.toFixed(2) }}
-                  </p>
-                </div>
-              </div>
-            </div>
+          <div>
+            <p class="font-headline font-bold text-on-surface">
+              Error carregant les entrades
+            </p>
+            <p class="text-on-surface-variant text-sm mt-1">{{ error }}</p>
           </div>
-
-          <!-- Tickets grid -->
-          <div
-            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8"
+          <button
+            @click="loadTickets"
+            class="ml-auto text-primary text-sm font-bold hover:underline"
           >
-            <div
-              v-for="ticket in result.tickets"
-              :key="ticket.id"
-              class="group glass-panel rounded-2xl border border-white/10 hover:border-primary/30 transition-all duration-300 overflow-hidden"
-            >
-              <!-- Ticket top strip -->
-              <div class="h-1.5 w-full signature-pulse"></div>
+            Reintentar
+          </button>
+        </div>
 
-              <div class="p-5">
-                <!-- Seat label big -->
-                <div class="flex items-start justify-between mb-4">
+        <!-- Results -->
+        <transition name="fade">
+          <div v-if="result && !loading">
+            <!-- Summary card -->
+            <div
+              class="glass-panel rounded-2xl border border-white/10 overflow-hidden mb-6"
+            >
+              <div
+                class="px-8 py-5 border-b border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+              >
+                <div class="flex items-center gap-3">
                   <div
-                    class="w-14 h-14 rounded-xl bg-primary/10 border border-primary/20 flex flex-col items-center justify-center"
+                    class="w-10 h-10 rounded-full bg-secondary-container/30 border border-secondary/20 flex items-center justify-center"
                   >
                     <span
-                      class="text-primary font-headline font-black text-lg leading-none"
+                      class="material-symbols-outlined text-secondary text-sm"
+                      >person</span
                     >
-                      {{ ticket.row }}{{ ticket.number }}
-                    </span>
-                    <span
-                      class="text-primary/60 text-[9px] uppercase tracking-wider mt-0.5"
-                      >Seat</span
+                  </div>
+                  <div>
+                    <p class="font-headline font-bold text-on-surface text-sm">
+                      {{ result.user.name }}
+                    </p>
+                    <p class="text-on-surface-variant text-xs">
+                      {{ result.user.email }}
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-6">
+                  <div class="text-right">
+                    <p
+                      class="text-xs text-on-surface-variant uppercase tracking-wider"
                     >
+                      Entrades
+                    </p>
+                    <p class="font-headline font-bold text-on-surface">
+                      {{ result.tickets.length }}
+                    </p>
                   </div>
                   <div class="text-right">
-                    <span
-                      class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-tertiary/10 border border-tertiary/20 text-tertiary text-[10px] font-bold uppercase tracking-wider"
+                    <p
+                      class="text-xs text-on-surface-variant uppercase tracking-wider"
                     >
-                      <span class="material-symbols-outlined text-xs"
-                        >check_circle</span
-                      >
-                      Confirmed
-                    </span>
+                      Total pagat
+                    </p>
+                    <p class="font-headline font-bold text-primary text-lg">
+                      €{{ result.total.toFixed(2) }}
+                    </p>
                   </div>
-                </div>
-
-                <!-- Ticket details -->
-                <div class="space-y-2">
-                  <div class="flex items-center gap-2 text-sm">
-                    <span
-                      class="material-symbols-outlined text-xs text-on-surface-variant"
-                      >location_on</span
-                    >
-                    <span class="text-on-surface-variant"
-                      >Row {{ ticket.row }}, Seat {{ ticket.number }}</span
-                    >
-                  </div>
-                  <div class="flex items-center gap-2 text-sm">
-                    <span
-                      class="material-symbols-outlined text-xs text-on-surface-variant"
-                      >confirmation_number</span
-                    >
-                    <span class="text-on-surface-variant font-mono text-xs">
-                      #{{ String(ticket.id).padStart(6, "0") }}
-                    </span>
-                  </div>
-                  <div
-                    v-if="ticket.purchased_at"
-                    class="flex items-center gap-2 text-sm"
-                  >
-                    <span
-                      class="material-symbols-outlined text-xs text-on-surface-variant"
-                      >schedule</span
-                    >
-                    <span class="text-on-surface-variant text-xs">
-                      {{ formatDate(ticket.purchased_at) }}
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Price + dashed separator -->
-                <div
-                  class="mt-4 pt-4 border-t border-dashed border-white/10 flex items-center justify-between"
-                >
-                  <span
-                    class="text-xs text-on-surface-variant uppercase tracking-wider"
-                    >Price paid</span
-                  >
-                  <span class="font-headline font-bold text-on-surface">
-                    €{{ ticket.price.toFixed(2) }}
-                  </span>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Download hint -->
-          <div
-            class="flex items-center justify-center gap-3 text-on-surface-variant text-sm"
-          >
-            <span class="material-symbols-outlined text-base">info</span>
-            <span
-              >Your e-tickets have been sent to
-              <strong class="text-on-surface">{{ result.user.email }}</strong
-              >. Present them at the venue entrance.</span
+            <!-- Empty tickets -->
+            <div
+              v-if="result.tickets.length === 0"
+              class="flex flex-col items-center py-20 text-center text-on-surface-variant gap-4"
             >
-          </div>
-        </div>
-      </transition>
+              <span class="material-symbols-outlined text-6xl opacity-20"
+                >confirmation_number</span
+              >
+              <p class="text-lg font-medium">
+                Encara no tens cap entrada comprada.
+              </p>
+              <NuxtLink
+                to="/"
+                class="px-6 py-3 rounded-xl border border-primary/30 text-primary font-bold hover:bg-primary/10 transition-colors"
+              >
+                Explorar esdeveniments
+              </NuxtLink>
+            </div>
 
-      <!-- Empty / initial state -->
-      <div
-        v-if="!result && !error && !loading"
-        class="flex flex-col items-center py-16 text-center text-on-surface-variant gap-4"
-      >
-        <span class="material-symbols-outlined text-6xl opacity-30"
-          >confirmation_number</span
-        >
-        <p class="text-lg font-medium">
-          Enter your email above to view your tickets.
-        </p>
-      </div>
+            <!-- Tickets grid — grouped by event -->
+            <template
+              v-for="(group, eventTitle) in ticketsByEvent"
+              :key="eventTitle"
+            >
+              <!-- Event header -->
+              <div class="flex items-center gap-3 mb-4 mt-8 first:mt-0">
+                <div
+                  class="w-8 h-8 rounded-lg signature-pulse flex items-center justify-center flex-shrink-0"
+                >
+                  <span class="material-symbols-outlined text-white text-sm"
+                    >event</span
+                  >
+                </div>
+                <div>
+                  <h2 class="font-headline font-bold text-on-surface">
+                    {{ eventTitle }}
+                  </h2>
+                  <p
+                    v-if="group[0]?.event?.venue"
+                    class="text-xs text-on-surface-variant"
+                  >
+                    {{ group[0].event.venue }} ·
+                    {{
+                      group[0].event.date ? formatDate(group[0].event.date) : ""
+                    }}
+                  </p>
+                </div>
+                <span
+                  class="ml-auto text-xs font-bold text-on-surface-variant bg-white/5 px-2 py-1 rounded-full"
+                  >{{ group.length }} entrada{{
+                    group.length !== 1 ? "s" : ""
+                  }}</span
+                >
+              </div>
+
+              <div
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"
+              >
+                <div
+                  v-for="ticket in group"
+                  :key="ticket.id"
+                  class="group glass-panel rounded-2xl border border-white/10 hover:border-primary/30 transition-all duration-300 overflow-hidden"
+                >
+                  <div class="h-1.5 w-full signature-pulse"></div>
+                  <div class="p-5">
+                    <div class="flex items-start justify-between mb-4">
+                      <div
+                        class="w-14 h-14 rounded-xl bg-primary/10 border border-primary/20 flex flex-col items-center justify-center"
+                      >
+                        <span
+                          class="text-primary font-headline font-black text-lg leading-none"
+                          >{{ ticket.row }}{{ ticket.number }}</span
+                        >
+                        <span
+                          class="text-primary/60 text-[9px] uppercase tracking-wider mt-0.5"
+                          >Seient</span
+                        >
+                      </div>
+                      <span
+                        class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-tertiary/10 border border-tertiary/20 text-tertiary text-[10px] font-bold uppercase tracking-wider"
+                      >
+                        <span class="material-symbols-outlined text-xs"
+                          >check_circle</span
+                        >
+                        Confirmat
+                      </span>
+                    </div>
+                    <div class="space-y-2">
+                      <div class="flex items-center gap-2 text-sm">
+                        <span
+                          class="material-symbols-outlined text-xs text-on-surface-variant"
+                          >location_on</span
+                        >
+                        <span class="text-on-surface-variant"
+                          >Fila {{ ticket.row }}, Seient
+                          {{ ticket.number }}</span
+                        >
+                      </div>
+                      <div class="flex items-center gap-2 text-sm">
+                        <span
+                          class="material-symbols-outlined text-xs text-on-surface-variant"
+                          >confirmation_number</span
+                        >
+                        <span class="text-on-surface-variant font-mono text-xs"
+                          >#{{ String(ticket.id).padStart(6, "0") }}</span
+                        >
+                      </div>
+                      <div
+                        v-if="ticket.purchased_at"
+                        class="flex items-center gap-2 text-sm"
+                      >
+                        <span
+                          class="material-symbols-outlined text-xs text-on-surface-variant"
+                          >schedule</span
+                        >
+                        <span class="text-on-surface-variant text-xs">{{
+                          formatDate(ticket.purchased_at)
+                        }}</span>
+                      </div>
+                    </div>
+                    <div
+                      class="mt-4 pt-4 border-t border-dashed border-white/10 flex items-center justify-between"
+                    >
+                      <span
+                        class="text-xs text-on-surface-variant uppercase tracking-wider"
+                        >Preu pagat</span
+                      >
+                      <span class="font-headline font-bold text-on-surface"
+                        >€{{ ticket.price.toFixed(2) }}</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </transition>
       </div>
     </main>
   </div>
 </template>
 
 <script setup>
+definePageMeta({ middleware: "user" });
+
 useHead({
-  title: "My Tickets | TICKETMONSTER",
-  htmlAttrs: { class: "dark", lang: "en" },
-  link: [
-    {
-      rel: "preconnect",
-      href: "https://fonts.googleapis.com",
-    },
-    {
-      rel: "stylesheet",
-      href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap",
-    },
-    {
-      rel: "stylesheet",
-      href: "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap",
-    },
-  ],
+  title: "Les meves Entrades | TICKETMONSTER",
+  htmlAttrs: { class: "dark", lang: "ca" },
 });
 
 const config = useRuntimeConfig();
-const email = ref("");
+const authStore = useAuthStore();
+const router = useRouter();
+
 const loading = ref(false);
 const error = ref(null);
 const result = ref(null);
 
-const fetchTickets = async () => {
+// Group tickets by event title
+const ticketsByEvent = computed(() => {
+  if (!result.value?.tickets) return {};
+  return result.value.tickets.reduce((groups, ticket) => {
+    const eventName = ticket.event?.title || "Sense esdeveniment";
+    if (!groups[eventName]) groups[eventName] = [];
+    groups[eventName].push(ticket);
+    return groups;
+  }, {});
+});
+
+const loadTickets = async () => {
   loading.value = true;
   error.value = null;
-  result.value = null;
-
   try {
-    const data = await $fetch(
-      `${config.public.apiUrl}/api/tickets`,
-      { query: { email: email.value } },
-    );
-    if (data.success) {
-      result.value = data;
-    } else {
-      error.value = "No tickets found for this email.";
-    }
+    const data = await $fetch(`${config.public.apiUrl}/api/auth/my-tickets`, {
+      headers: authStore.authHeaders(),
+    });
+    result.value = data;
   } catch (e) {
-    const msg = e.response?._data?.error || e.message;
-    error.value = msg || "Something went wrong. Please try again.";
+    error.value =
+      e.response?._data?.message || e.message || "Error desconegut.";
   } finally {
     loading.value = false;
   }
 };
 
+const handleLogout = async () => {
+  await authStore.logout();
+  router.push("/login");
+};
+
 const formatDate = (iso) => {
-  return new Date(iso).toLocaleString("en-GB", {
+  if (!iso) return "";
+  return new Date(iso).toLocaleString("ca-ES", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -399,6 +384,9 @@ const formatDate = (iso) => {
     minute: "2-digit",
   });
 };
+
+// Auto-load on mount
+onMounted(loadTickets);
 </script>
 
 <style scoped>

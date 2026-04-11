@@ -10,8 +10,6 @@ services:
       - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
-      # Script de inicialización de la BD ahora está en websockets/database temporalmente
-      - ./websockets/database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   api:
     build:
@@ -30,10 +28,20 @@ services:
       - DB_USERNAME=root
       - DB_PASSWORD=root
       - REDIS_HOST=redis
+      - APP_KEY=base64:2fl+Ktvkfl+Ktvkfl+Ktvkfl+Ktvkfl+Ktvkfl+Ktvk=
+      - APP_ENV=local
+      - APP_DEBUG=true
     ports:
       - "8000:8000"
     volumes:
       - ./api:/var/www/html
+    command: >
+      bash -c "composer install --no-interaction &&
+               php artisan config:clear &&
+               php artisan migrate --force &&
+               php artisan db:seed --class=AdminUserSeeder --no-interaction &&
+               php artisan db:seed --class=DefaultEventSeeder --no-interaction &&
+               php artisan serve --host=0.0.0.0 --port=8000"
 
   websockets:
     build:

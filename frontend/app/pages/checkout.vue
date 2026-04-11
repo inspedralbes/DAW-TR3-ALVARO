@@ -34,7 +34,7 @@
       <div
         class="text-xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 font-headline"
       >
-        ELECTRIC STAGE
+        TICKETMONSTER
       </div>
     </header>
 
@@ -85,7 +85,9 @@
       <div
         class="glass-panel rounded-2xl p-6 border border-white/10 w-full max-w-sm text-center"
       >
-        <p class="text-on-surface-variant text-xs uppercase tracking-wider mb-1">
+        <p
+          class="text-on-surface-variant text-xs uppercase tracking-wider mb-1"
+        >
           Confirmation #
         </p>
         <p class="font-headline font-bold text-xl text-primary">
@@ -122,9 +124,7 @@
             <h2
               class="font-headline text-lg font-bold text-on-surface flex items-center gap-2"
             >
-              <span class="material-symbols-outlined text-primary"
-                >person</span
-              >
+              <span class="material-symbols-outlined text-primary">person</span>
               Personal Details
             </h2>
 
@@ -275,10 +275,12 @@
             />
             <label for="terms" class="text-sm text-on-surface-variant">
               I agree to the
-              <a href="#" class="text-primary hover:underline">Terms of Service</a>
+              <a href="#" class="text-primary hover:underline"
+                >Terms of Service</a
+              >
               and
-              <a href="#" class="text-primary hover:underline">Refund Policy</a>.
-              I understand tickets are non-transferable.
+              <a href="#" class="text-primary hover:underline">Refund Policy</a
+              >. I understand tickets are non-transferable.
             </label>
           </div>
 
@@ -306,7 +308,9 @@
         >
           <span
             class="material-symbols-outlined text-3xl"
-            :class="timeLeft < 120 ? 'text-error animate-pulse' : 'text-tertiary'"
+            :class="
+              timeLeft < 120 ? 'text-error animate-pulse' : 'text-tertiary'
+            "
             >timer</span
           >
           <div class="flex-1">
@@ -314,7 +318,11 @@
               class="text-xs font-bold uppercase tracking-wider"
               :class="timeLeft < 120 ? 'text-error' : 'text-on-surface-variant'"
             >
-              {{ timeLeft < 120 ? "⚠ Expiring soon!" : "Time to complete purchase" }}
+              {{
+                timeLeft < 120
+                  ? "⚠ Expiring soon!"
+                  : "Time to complete purchase"
+              }}
             </p>
             <p
               class="font-headline font-bold text-3xl tracking-tight"
@@ -323,14 +331,12 @@
               {{ formattedTime }}
             </p>
           </div>
-          <div class="text-right">
-            <p class="text-xs text-on-surface-variant">Seats held for</p>
-            <p class="text-xs text-on-surface-variant">10 minutes</p>
-          </div>
         </div>
 
         <!-- Order Summary -->
-        <div class="glass-panel rounded-2xl border border-white/10 overflow-hidden">
+        <div
+          class="glass-panel rounded-2xl border border-white/10 overflow-hidden"
+        >
           <div class="px-6 py-5 border-b border-white/5">
             <h2 class="font-headline text-lg font-bold text-on-surface">
               Order Summary
@@ -452,6 +458,7 @@ useHead({
 
 const route = useRoute();
 const config = useRuntimeConfig();
+const authStore = useAuthStore();
 
 // Parse query params sent from SeatMap
 const seatIds = computed(() => {
@@ -467,7 +474,9 @@ const sessionId = computed(() => route.query.session || "");
 const totalFromQuery = computed(() => route.query.total || "0");
 const pricePerSeat = 50;
 const subtotal = computed(() => seatIds.value.length * pricePerSeat);
-const serviceFee = computed(() => Math.round(subtotal.value * 0.08 * 100) / 100);
+const serviceFee = computed(
+  () => Math.round(subtotal.value * 0.08 * 100) / 100,
+);
 const grandTotal = computed(() => subtotal.value + serviceFee.value);
 
 // 10-minute countdown (600 seconds)
@@ -511,6 +520,16 @@ const form = reactive({
   acceptTerms: false,
 });
 
+// Pre-fill form for logged-in users
+onMounted(() => {
+  if (authStore.user) {
+    const parts = (authStore.user.name || "").trim().split(" ");
+    form.firstName = parts[0] || "";
+    form.lastName = parts.slice(1).join(" ") || "";
+    form.email = authStore.user.email || "";
+  }
+});
+
 const isSubmitting = ref(false);
 const isSuccess = ref(false);
 const confirmationCode = ref("");
@@ -528,7 +547,15 @@ const formatExpiry = (e) => {
 
 const submitCheckout = async () => {
   if (isSubmitting.value || isExpired.value) return;
-  if (!form.firstName || !form.lastName || !form.email || !form.cardNumber || !form.expiry || !form.cvv || !form.cardName) {
+  if (
+    !form.firstName ||
+    !form.lastName ||
+    !form.email ||
+    !form.cardNumber ||
+    !form.expiry ||
+    !form.cvv ||
+    !form.cardName
+  ) {
     alert("Please fill in all required fields.");
     return;
   }
@@ -550,7 +577,7 @@ const submitCheckout = async () => {
           name: `${form.firstName} ${form.lastName}`,
           email: form.email,
         },
-      }
+      },
     );
 
     if (response.success) {

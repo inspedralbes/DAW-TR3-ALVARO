@@ -3,7 +3,9 @@ import { onMounted, onUnmounted, ref, computed } from "vue";
 import { useSeatStore } from "~/stores/seatStore";
 
 const seatStore = useSeatStore();
+const authStore = useAuthStore();
 const { $socket } = useNuxtApp();
+const router = useRouter();
 
 // Unified toast notification system
 const toast = ref({ show: false, message: "", title: "", type: "info" });
@@ -12,7 +14,9 @@ let toastTimer = null;
 const showToast = (title, message, type = "info", duration = 4000) => {
   if (toastTimer) clearTimeout(toastTimer);
   toast.value = { show: true, title, message, type };
-  toastTimer = setTimeout(() => { toast.value.show = false; }, duration);
+  toastTimer = setTimeout(() => {
+    toast.value.show = false;
+  }, duration);
 };
 
 // Keep liveUpdate for backward compat (seat conflict events)
@@ -20,12 +24,10 @@ const liveUpdate = ref({ message: "", show: false });
 const selectedSeats = ref(new Set());
 const isProcessing = ref(false);
 
-// Precios harcodeado a 145€ base as per HTML,
-// o podemos usar 50 € de bd, asumiremos dinámico
-const checkoutPrice = 50.0;
-
 const totalAmount = computed(() => {
-  return selectedSeats.value.size * checkoutPrice;
+  return seatStore.seats
+    .filter((s) => selectedSeats.value.has(s.id))
+    .reduce((sum, s) => sum + (parseFloat(s.price) || 0), 0);
 });
 
 const checkoutSelection = computed(() => {
@@ -43,10 +45,7 @@ onMounted(async () => {
 
   $socket.on("seat_updated", (data) => {
     // Si nos lo quitaron
-    if (
-      data.status === "reserved" &&
-      data.session_id !== seatStore.sessionId
-    ) {
+    if (data.status === "reserved" && data.session_id !== seatStore.sessionId) {
       if (selectedSeats.value.has(data.seat_id)) {
         selectedSeats.value.delete(data.seat_id);
       }
@@ -81,7 +80,7 @@ const handleSeatClick = async (seatId) => {
     showToast(
       "Límite de entradas alcanzado",
       "Solo puedes seleccionar un máximo de 5 entradas por compra.",
-      "warning"
+      "warning",
     );
     return;
   }
@@ -94,7 +93,6 @@ const processCheckout = async () => {
   isProcessing.value = true;
 
   const config = useRuntimeConfig();
-  const router = useRouter();
 
   try {
     for (const seatId of selectedSeats.value) {
@@ -129,28 +127,54 @@ const processCheckout = async () => {
       showToast("Operación abortada", msg, "error");
     } else {
       console.error("Error Checkout General", e);
-      showToast("Error inesperado", "Hubo un error procesando tu solicitud.", "error");
+      showToast(
+        "Error inesperado",
+        "Hubo un error procesando tu solicitud.",
+        "error",
+      );
     }
   } finally {
     isProcessing.value = false;
   }
 };
 
-const getSeatColor = (id, status) => {
-  if (selectedSeats.value.has(id)) {
-    return "bg-primary scale-110";
+const getSeatStyle = (seat) => {
+  const color = seat.zone_color || '#6366f1'; // fallback indigo
+
+  if (selectedSeats.value.has(seat.id)) {
+    return { backgroundColor: color, opacity: 1 };
   }
-  switch (status) {
-    case "available":
-      return "bg-secondary seat-glow-available";
-    case "reserved":
-      return "bg-tertiary";
-    case "sold":
-      return "bg-error-container opacity-40";
-    default:
-      return "bg-slate-500";
+  switch (seat.status) {
+    case 'available': return { backgroundColor: color, opacity: 1 };
+    case 'reserved':  return { backgroundColor: color, opacity: 0.35 };
+    case 'sold':      return { backgroundColor: color, opacity: 0.15 };
+    default:          return { backgroundColor: color, opacity: 0.5 };
   }
 };
+
+const getSeatClass = (seat) => {
+  const base = 'relative w-full aspect-square rounded-sm transition-all duration-200 flex items-center justify-center overflow-hidden';
+  if (selectedSeats.value.has(seat.id)) {
+    return `${base} scale-110 ring-2 ring-white shadow-[0_0_8px_rgba(255,255,255,0.6)] cursor-pointer`;
+  }
+  switch (seat.status) {
+    case 'available': return `${base} hover:scale-125 hover:ring-2 hover:ring-white/50 cursor-pointer`;
+    case 'reserved':  return `${base} cursor-not-allowed`;
+    case 'sold':      return `${base} cursor-not-allowed`;
+    default:          return `${base} bg-slate-500 opacity-30`;
+  }
+};
+
+// Zonas únicas para la leyenda
+const zoneColors = computed(() => {
+  const map = new Map();
+  for (const seat of seatStore.seats) {
+    if (seat.zone_name && seat.zone_color && !map.has(seat.zone_name)) {
+      map.set(seat.zone_name, seat.zone_color);
+    }
+  }
+  return Array.from(map, ([name, color]) => ({ name, color }));
+});
 </script>
 
 <template>
@@ -172,23 +196,32 @@ const getSeatColor = (id, status) => {
           class="font-headline tracking-tight text-fuchsia-400/80 hover:text-fuchsia-400 transition-colors"
           >Concerts</NuxtLink
         >
-        <a
-          href="/"
-          class="font-headline tracking-tight text-fuchsia-400 border-b-2 border-fuchsia-500 pb-1"
-          >Venues</a
-        >
         <NuxtLink
-          to="/my-tickets"
+          :to="authStore.isLoggedIn ? '/my-tickets' : '/login'"
           class="font-headline tracking-tight text-fuchsia-400/80 hover:text-fuchsia-400 transition-colors"
-          >My Tickets</NuxtLink
+          >Les meves entrades</NuxtLink
         >
       </div>
       <div class="flex items-center gap-4">
-        <button
-          class="material-symbols-outlined text-on-background hover:bg-white/5 transition-all p-2 rounded-full"
+        <NuxtLink
+          v-if="!authStore.isLoggedIn"
+          to="/login"
+          class="flex items-center gap-1.5 text-sm font-headline font-bold text-fuchsia-400/80 hover:text-fuchsia-400 transition-colors"
         >
-          account_circle
-        </button>
+          <span class="material-symbols-outlined text-base"
+            >account_circle</span
+          >
+          <span class="hidden sm:inline">Iniciar Sessió</span>
+        </NuxtLink>
+        <div
+          v-else
+          class="flex items-center gap-1.5 text-sm text-fuchsia-400/80"
+        >
+          <span class="material-symbols-outlined text-base"
+            >account_circle</span
+          >
+          <span class="hidden sm:inline">{{ authStore.user?.name }}</span>
+        </div>
       </div>
     </nav>
 
@@ -238,38 +271,27 @@ const getSeatColor = (id, status) => {
       </header>
 
       <section class="px-6 mb-8">
-        <div
-          class="flex flex-wrap gap-6 p-4 bg-surface-container-low rounded-xl"
-        >
+        <div class="flex flex-wrap gap-x-6 gap-y-3 p-4 bg-surface-container-low rounded-xl">
+          <!-- Zone legend -->
+          <template v-if="zoneColors.length">
+            <div v-for="z in zoneColors" :key="z.name" class="flex items-center gap-2">
+              <div class="w-4 h-4 rounded-sm" :style="{ backgroundColor: z.color }"></div>
+              <span class="font-label text-xs uppercase tracking-wider" :style="{ color: z.color }">{{ z.name }}</span>
+            </div>
+            <div class="w-px h-4 bg-white/10 self-center"></div>
+          </template>
+          <!-- Status indicators -->
           <div class="flex items-center gap-2">
-            <div
-              class="w-4 h-4 rounded-sm bg-secondary seat-glow-available"
-            ></div>
-            <span
-              class="font-label text-xs uppercase tracking-wider text-on-surface-variant"
-              >Available</span
-            >
+            <div class="w-4 h-4 rounded-sm bg-primary ring-2 ring-white/50"></div>
+            <span class="font-label text-xs uppercase tracking-wider text-on-surface-variant">Seleccionat</span>
           </div>
           <div class="flex items-center gap-2">
-            <div class="w-4 h-4 rounded-sm bg-tertiary"></div>
-            <span
-              class="font-label text-xs uppercase tracking-wider text-on-surface-variant"
-              >Reserved</span
-            >
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="w-4 h-4 rounded-sm bg-primary"></div>
-            <span
-              class="font-label text-xs uppercase tracking-wider text-on-surface-variant"
-              >Selected</span
-            >
+            <div class="w-4 h-4 rounded-sm bg-tertiary opacity-60"></div>
+            <span class="font-label text-xs uppercase tracking-wider text-on-surface-variant">Reservat</span>
           </div>
           <div class="flex items-center gap-2">
             <div class="w-4 h-4 rounded-sm bg-error-container opacity-40"></div>
-            <span
-              class="font-label text-xs uppercase tracking-wider text-on-surface-variant"
-              >Sold</span
-            >
+            <span class="font-label text-xs uppercase tracking-wider text-on-surface-variant">Venut</span>
           </div>
         </div>
       </section>
@@ -307,22 +329,56 @@ const getSeatColor = (id, status) => {
             class="seat-grid"
             style="grid-template-columns: repeat(24, minmax(0, 1fr))"
           >
-            <!-- Dynamic Grid (Columns configured down to 10 dynamically in style to match BBDD) -->
-            <button
+            <!-- Dynamic Grid -->
+            <div
               v-for="seat in seatStore.seats"
               :key="seat.id"
-              :class="[
-                'w-full aspect-square rounded-sm hover:scale-125 transition-transform duration-200 flex items-center justify-center text-black/80',
-                getSeatColor(seat.id, seat.status),
-              ]"
-              @click="handleSeatClick(seat.id)"
-              :title="`Group - Row ${seat.row} - Seat ${seat.number}`"
+              class="relative group"
             >
-              <span
-                class="text-[0.45rem] sm:text-[0.6rem] md:text-[0.7rem] font-bold tracking-tighter"
-                >{{ seat.row }}{{ seat.number }}</span
+              <button
+                :class="getSeatClass(seat)"
+                :style="getSeatStyle(seat)"
+                @click="handleSeatClick(seat.id)"
+                :disabled="seat.status !== 'available' && !selectedSeats.has(seat.id)"
               >
-            </button>
+                <!-- Icono de estado overlay -->
+                <span v-if="selectedSeats.value?.has(seat.id)"
+                  class="material-symbols-outlined text-white drop-shadow"
+                  style="font-size:0.7rem">check</span>
+                <span v-else-if="seat.status === 'sold'"
+                  class="material-symbols-outlined text-white/80"
+                  style="font-size:0.65rem">close</span>
+                <span v-else-if="seat.status === 'reserved'"
+                  class="material-symbols-outlined text-white/80"
+                  style="font-size:0.65rem">lock</span>
+                <!-- Fila + número (solo en disponible) -->
+                <span v-else
+                  class="text-[0.45rem] sm:text-[0.55rem] font-bold tracking-tighter text-black/60"
+                  >{{ seat.row }}{{ seat.number }}</span
+                >
+              </button>
+              <!-- Tooltip hover -->
+              <div
+                class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50
+                       opacity-0 group-hover:opacity-100 transition-opacity duration-150
+                       bg-zinc-900/95 border border-white/10 backdrop-blur-md
+                       rounded-xl px-3 py-2 w-36 shadow-xl text-center"
+              >
+                <p class="font-headline font-bold text-[10px] uppercase tracking-widest"
+                   :style="seat.zone_color ? { color: seat.zone_color } : {}"
+                   :class="!seat.zone_color ? 'text-primary' : ''"
+                >{{ seat.zone_name ?? 'General' }}</p>
+                <p class="text-white font-bold text-sm mt-0.5">€{{ parseFloat(seat.price).toFixed(2) }}</p>
+                <p class="text-zinc-400 text-[10px] mt-0.5">Fila {{ seat.row }} · Seient {{ seat.number }}</p>
+                <p class="text-[9px] mt-1 font-bold uppercase tracking-widest"
+                   :class="{
+                     'text-emerald-400': seat.status === 'available',
+                     'text-amber-400': seat.status === 'reserved',
+                     'text-red-400': seat.status === 'sold',
+                   }"
+                >{{ seat.status === 'available' ? 'Disponible' : seat.status === 'reserved' ? 'Reservat' : 'Venut' }}</p>
+              </div>
+            </div>
           </div>
 
           <!-- Floor Label -->
@@ -373,19 +429,19 @@ const getSeatColor = (id, status) => {
             <div>
               <span
                 class="text-primary-fixed font-label text-[10px] uppercase tracking-widest"
-                >Section {{ seat.row }}</span
+                >{{ seat.zone_name ?? 'Zona' }}</span
               >
               <h3 class="text-xl font-bold font-headline mt-1">
-                Row {{ seat.row }}, Seat {{ seat.number }}
+                Fila {{ seat.row }}, Seient {{ seat.number }}
               </h3>
             </div>
             <span class="font-headline font-bold text-xl text-on-background"
-              >€{{ checkoutPrice.toFixed(2) }}</span
+              >€{{ parseFloat(seat.price).toFixed(2) }}</span
             >
           </div>
           <div class="flex items-center gap-2 text-on-surface-variant text-sm">
             <span class="material-symbols-outlined text-sm">bolt</span>
-            <span>Electronic ID: {{ seat.id }}</span>
+            <span>ID: {{ seat.id }}</span>
           </div>
         </div>
       </div>
@@ -416,9 +472,6 @@ const getSeatColor = (id, status) => {
         >
           {{ isProcessing ? "Processing..." : "Proceed to Payment" }}
         </button>
-        <p class="text-center text-[10px] text-outline mt-4 font-body">
-          Transaction fees via Laravel API processed securely.
-        </p>
       </div>
     </aside>
 
@@ -428,13 +481,26 @@ const getSeatColor = (id, status) => {
         v-if="liveUpdate.show"
         class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] w-[340px] max-w-[90vw]"
       >
-        <div class="glass-panel border-l-4 border-error p-4 rounded-xl shadow-2xl flex items-start gap-3">
-          <span class="material-symbols-outlined text-error mt-0.5">sensors</span>
+        <div
+          class="glass-panel border-l-4 border-error p-4 rounded-xl shadow-2xl flex items-start gap-3"
+        >
+          <span class="material-symbols-outlined text-error mt-0.5"
+            >sensors</span
+          >
           <div class="flex-1">
-            <h4 class="text-sm font-bold font-headline mb-0.5 text-on-surface">Actualización en vivo</h4>
-            <p class="text-xs text-on-surface-variant font-body">{{ liveUpdate.message }}</p>
+            <h4 class="text-sm font-bold font-headline mb-0.5 text-on-surface">
+              Actualización en vivo
+            </h4>
+            <p class="text-xs text-on-surface-variant font-body">
+              {{ liveUpdate.message }}
+            </p>
           </div>
-          <button @click="liveUpdate.show = false" class="material-symbols-outlined text-outline text-base hover:text-white transition-colors">close</button>
+          <button
+            @click="liveUpdate.show = false"
+            class="material-symbols-outlined text-outline text-base hover:text-white transition-colors"
+          >
+            close
+          </button>
         </div>
       </div>
     </Transition>
@@ -470,14 +536,26 @@ const getSeatColor = (id, status) => {
                 'text-primary': toast.type === 'info',
               }"
             >
-              {{ toast.type === 'warning' ? 'warning' : toast.type === 'error' ? 'error' : 'info' }}
+              {{
+                toast.type === "warning"
+                  ? "warning"
+                  : toast.type === "error"
+                    ? "error"
+                    : "info"
+              }}
             </span>
           </div>
 
           <!-- Content -->
           <div class="flex-1 min-w-0">
-            <h4 class="text-sm font-bold font-headline mb-1 text-on-surface">{{ toast.title }}</h4>
-            <p class="text-xs text-on-surface-variant font-body leading-relaxed">{{ toast.message }}</p>
+            <h4 class="text-sm font-bold font-headline mb-1 text-on-surface">
+              {{ toast.title }}
+            </h4>
+            <p
+              class="text-xs text-on-surface-variant font-body leading-relaxed"
+            >
+              {{ toast.message }}
+            </p>
           </div>
 
           <!-- Close -->
@@ -490,7 +568,8 @@ const getSeatColor = (id, status) => {
         </div>
 
         <!-- Progress bar auto-dismiss -->
-        <div class="h-0.5 rounded-full mx-5 mt-1 animate-shrink"
+        <div
+          class="h-0.5 rounded-full mx-5 mt-1 animate-shrink"
           :class="{
             'bg-tertiary/60': toast.type === 'warning',
             'bg-error/60': toast.type === 'error',

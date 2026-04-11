@@ -21,5 +21,5 @@ COPY . .
 
 EXPOSE 8000
 
-# Al levantar el contenedor, instalamos dependencias y servimos
-CMD bash -c "composer install && php artisan serve --host=0.0.0.0 --port=8000"
+# Al levantar el contenedor, instalamos dependencias, migramos y servimos
+CMD bash -c "composer install && php artisan migrate --force && php artisan db:seed --class=AdminUserSeeder && php artisan db:seed --class=DefaultEventSeeder && php artisan serve --host=0.0.0.0 --port=8000"

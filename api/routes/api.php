@@ -24,7 +24,8 @@ Route::get('/seats',               [SeatController::class, 'index']);
 Route::post('/seats/reserve',      [SeatController::class, 'reserve']);
 Route::post('/seats/checkout',     [SeatController::class, 'checkout']);
 
-Route::get('/tickets',             [SeatController::class, 'myTickets']);
+// My Tickets — requires Auth
+Route::middleware('auth:sanctum')->get('/auth/my-tickets', [SeatController::class, 'myTicketsByToken']);
 
 // ── Admin routes (auth:sanctum + admin role) ──────────────────────────────
 Route::prefix('admin')
