@@ -390,7 +390,7 @@ const zoneColors = computed(() => {
           <div class="mt-12 text-center">
             <span
               class="font-label text-xs text-outline tracking-[1em] uppercase"
-              >Ground Floor Arena</span
+              >Pista Principal</span
             >
           </div>
         </div>
@@ -403,7 +403,7 @@ const zoneColors = computed(() => {
     >
       <div class="flex justify-between items-center mb-10">
         <h2 class="font-headline text-2xl font-bold tracking-tight">
-          Order Summary
+          Resum de la Comanda
         </h2>
         <button
           class="material-symbols-outlined text-outline hover:text-white"
@@ -417,7 +417,7 @@ const zoneColors = computed(() => {
         v-if="selectedSeats.size === 0"
         class="flex-grow flex items-center justify-center text-outline-variant font-label text-sm uppercase tracking-widest text-center px-4"
       >
-        No tickets selected yet. Tap blue glowing dots on the map.
+        Encara no has seleccionat entrades. Fes clic en algun seient disponible del mapa.
       </div>
 
       <div
@@ -457,7 +457,7 @@ const zoneColors = computed(() => {
         <div class="flex justify-between items-center mb-6">
           <span
             class="text-on-surface-variant font-label text-sm uppercase tracking-widest"
-            >Total Price</span
+            >Preu Total</span
           >
           <span
             class="text-3xl font-headline font-bold text-on-background tracking-tighter"
@@ -475,7 +475,7 @@ const zoneColors = computed(() => {
               : 'bg-surface-container-highest text-outline cursor-not-allowed opacity-70',
           ]"
         >
-          {{ isProcessing ? "Processing..." : "Proceed to Payment" }}
+          {{ isProcessing ? "Processant..." : "Procedir al Pagament" }}
         </button>
       </div>
     </aside>

@@ -152,22 +152,33 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1.5">Data i hora *</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1.5">Data *</label>
                     <input
-                      v-model="form.date"
-                      type="datetime-local"
-                      class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-3 text-on-surface focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-all"
+                      v-model="form.dateOnly"
+                      type="date"
+                      style="color-scheme: dark;"
+                      class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-3 text-on-surface focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-all cursor-pointer"
                     />
                   </div>
                   <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1.5">Recinte</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1.5">Hora *</label>
                     <input
-                      v-model="form.venue"
-                      type="text"
-                      placeholder="Palau Sant Jordi, Barcelona"
-                      class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-3 text-on-surface placeholder:text-outline focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-all"
+                      v-model="form.timeOnly"
+                      type="time"
+                      style="color-scheme: dark;"
+                      class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-3 text-on-surface focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-all cursor-pointer"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1.5">Recinte</label>
+                  <input
+                    v-model="form.venue"
+                    type="text"
+                    placeholder="Palau Sant Jordi, Barcelona"
+                    class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-3 text-on-surface placeholder:text-outline focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-all"
+                  />
                 </div>
 
                 <div>
@@ -185,50 +196,20 @@
               <div class="space-y-4">
                 <div class="flex items-center justify-between">
                   <h3 class="text-xs font-bold uppercase tracking-widest text-on-surface-variant flex items-center gap-2">
-                    <span class="material-symbols-outlined text-sm text-secondary">layers</span>Zones i preus
+                    <span class="material-symbols-outlined text-sm text-secondary">layers</span>Zones i preus (Per defecte)
                   </h3>
-                  <button
-                    @click="addZone"
-                    type="button"
-                    class="flex items-center gap-1.5 text-xs font-bold text-secondary hover:bg-secondary/10 px-3 py-1.5 rounded-lg transition-colors"
-                  >
-                    <span class="material-symbols-outlined text-sm">add_circle</span>
-                    Afegir zona
-                  </button>
                 </div>
 
-                <div v-if="form.zones.length === 0" class="text-center py-6 border border-dashed border-white/10 rounded-xl text-on-surface-variant">
-                  <span class="material-symbols-outlined text-2xl opacity-30 block mb-1">layers</span>
-                  <p class="text-xs">Afegeix zones per definir el plànol i preus</p>
-                </div>
-
-                <div v-else class="space-y-3">
+                <div class="space-y-3">
                   <div
                     v-for="(zone, i) in form.zones"
                     :key="i"
                     class="p-4 bg-white/5 rounded-xl border border-white/10 space-y-3"
                   >
                     <div class="flex items-center gap-3">
-                      <!-- Color picker -->
-                      <div class="relative">
-                        <input
-                          type="color"
-                          v-model="zone.color"
-                          class="w-10 h-10 rounded-lg cursor-pointer border-none bg-transparent"
-                          title="Color de la zona"
-                        />
-                      </div>
-                      <!-- Zone name -->
-                      <input
-                        v-model="zone.name"
-                        type="text"
-                        placeholder="Nom zona (ex: VIP)"
-                        class="flex-1 bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-3 py-2 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary/50 transition-all"
-                      />
-                      <!-- Remove zone -->
-                      <button @click="removeZone(i)" type="button" class="material-symbols-outlined text-base text-outline hover:text-error transition-colors">
-                        remove_circle
-                      </button>
+                      <!-- Fixed Color and Name -->
+                      <div class="w-5 h-5 rounded-md shadow-sm" :style="{ backgroundColor: zone.color }"></div>
+                      <span class="flex-1 font-headline font-bold text-on-surface uppercase tracking-wider">{{ zone.name }}</span>
                     </div>
 
                     <div class="grid grid-cols-3 gap-3">
@@ -281,7 +262,7 @@
               </button>
               <button
                 @click="submitForm"
-                :disabled="submitting || !form.title || !form.date"
+                :disabled="submitting || !form.title || !form.dateOnly || !form.timeOnly"
                 class="flex items-center gap-2 px-6 py-2.5 rounded-xl signature-pulse text-white font-headline font-bold text-sm uppercase tracking-wide hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
               >
                 <span v-if="submitting" class="material-symbols-outlined text-base animate-spin">progress_activity</span>
@@ -393,12 +374,19 @@ const showToast = (message, type = 'success') => {
 }
 
 // ── Form ───────────────────────────────────────────────────────────────────
+const DEFAULT_ZONES = [
+  { name: 'VIP', color: '#c084fc', price: 120.00, rowsStr: 'A,B', seatsPerRow: 10 },
+  { name: 'Preferent', color: '#83fba5', price: 75.00, rowsStr: 'C,D,E', seatsPerRow: 15 },
+  { name: 'General', color: '#60a5fa', price: 40.00, rowsStr: 'F,G,H,I,J', seatsPerRow: 20 },
+];
+
 const emptyForm = () => ({
   title: '',
-  date: '',
+  dateOnly: '',
+  timeOnly: '',
   venue: '',
   description: '',
-  zones: [],
+  zones: JSON.parse(JSON.stringify(DEFAULT_ZONES)),
 })
 
 const form = ref(emptyForm())
@@ -426,12 +414,22 @@ const openCreate = () => {
 
 const openEdit = (event) => {
   editingEvent.value = event
+  let dDate = '';
+  let dTime = '';
+  if (event.date) {
+    // Intentem parsejar la data guardada, normalment ve format ISO 
+    const isodate = new Date(event.date);
+    dDate = isodate.toISOString().split('T')[0];
+    dTime = isodate.toTimeString().substring(0, 5);
+  }
+
   form.value = {
     title: event.title,
-    date: event.date ? event.date.substring(0, 16) : '',
+    dateOnly: dDate,
+    timeOnly: dTime,
     venue: event.venue || '',
     description: event.description || '',
-    zones: (event.zones || []).map(z => ({
+    zones: (event.zones?.length ? event.zones : JSON.parse(JSON.stringify(DEFAULT_ZONES))).map(z => ({
       ...z,
       rowsStr: Array.isArray(z.rows) ? z.rows.join(',') : (z.rows || ''),
     })),
@@ -444,19 +442,6 @@ const closeModal = () => {
   editingEvent.value = null
 }
 
-const addZone = () => {
-  const colors = ['#95aaff', '#83fba5', '#ffd16f', '#ff6e84', '#b39ddb', '#4dd0e1']
-  form.value.zones.push({
-    name: '',
-    color: colors[form.value.zones.length % colors.length],
-    price: 50,
-    rowsStr: '',
-    seatsPerRow: 20,
-  })
-}
-
-const removeZone = (i) => form.value.zones.splice(i, 1)
-
 const serializeZones = () =>
   form.value.zones.map(z => ({
     name: z.name,
@@ -468,12 +453,13 @@ const serializeZones = () =>
 
 // ── CRUD ───────────────────────────────────────────────────────────────────
 const submitForm = async () => {
-  if (!form.value.title || !form.value.date) return
+  if (!form.value.title || !form.value.dateOnly || !form.value.timeOnly) return
   submitting.value = true
   try {
+    const combinedDate = `${form.value.dateOnly}T${form.value.timeOnly}:00`;
     const payload = {
       title: form.value.title,
-      date: form.value.date,
+      date: combinedDate,
       venue: form.value.venue,
       description: form.value.description,
       zones: serializeZones(),
