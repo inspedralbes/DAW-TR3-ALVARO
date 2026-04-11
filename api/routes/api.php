@@ -22,6 +22,7 @@ Route::get('/events/{event}/seats',[EventController::class, 'seats']);
 
 Route::get('/seats',               [SeatController::class, 'index']);
 Route::post('/seats/reserve',      [SeatController::class, 'reserve']);
+Route::post('/seats/release',      [SeatController::class, 'release']);
 Route::post('/seats/checkout',     [SeatController::class, 'checkout']);
 
 // My Tickets — requires Auth

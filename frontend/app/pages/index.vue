@@ -376,7 +376,7 @@
         <div
           class="text-zinc-600 text-[10px] tracking-[0.3em] uppercase font-bold"
         >
-          © 2024 ELECTRIC STAGE. ENGINEERED FOR ENCORE.
+          © 2026 TICKETMONSTER. ENGINEERED FOR ENCORE.
         </div>
       </div>
     </footer>

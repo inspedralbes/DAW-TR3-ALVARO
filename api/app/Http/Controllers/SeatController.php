@@ -11,9 +11,14 @@ use Illuminate\Support\Facades\Log;
 
 class SeatController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $seats = Seat::with('event')->get()->map(function ($seat) {
+        $query = Seat::with('event');
+        if ($request->has('event_id')) {
+            $query->where('event_id', $request->event_id);
+        }
+
+        $seats = $query->get()->map(function ($seat) {
             $zoneName  = null;
             $zoneColor = null;
 
@@ -37,6 +42,7 @@ class SeatController extends Controller
                 'zone_name'  => $zoneName,
                 'zone_color' => $zoneColor,
                 'event_id'   => $seat->event_id,
+                'event'      => $seat->event,
             ];
         });
 
@@ -50,8 +56,11 @@ class SeatController extends Controller
             'session_id' => 'required|string',
         ]);
 
-        // Check limit of 5 per session locally to prevent hoarding
+        $seatToReserve = Seat::findOrFail($request->seat_id);
+
+        // Check limit of 5 per session locally to prevent hoarding, scoped by event
         $currentReservationsCount = Seat::where('session_id', $request->session_id)
+            ->where('event_id', $seatToReserve->event_id)
             ->whereIn('status', ['reserved', 'sold'])
             ->count();
             
@@ -95,6 +104,31 @@ class SeatController extends Controller
         ]);
     }
 
+    public function release(Request $request)
+    {
+        $request->validate([
+            'seat_id' => 'required|exists:seats,id',
+            'session_id' => 'required|string',
+        ]);
+
+        $seat = Seat::where('id', $request->seat_id)
+            ->where('status', 'reserved')
+            ->where('session_id', $request->session_id)
+            ->first();
+
+        if ($seat) {
+            $seat->update([
+                'status' => 'available',
+                'session_id' => null,
+                'reserved_at' => null,
+            ]);
+            event(new \App\Events\SeatUpdated($seat));
+            Log::info("Seat released: {$seat->id} by user cancelling");
+        }
+
+        return response()->json(['success' => true]);
+    }
+
     public function checkout(Request $request)
     {
         $request->validate([
@@ -125,10 +159,16 @@ class SeatController extends Controller
                 throw new \Exception('One or more seats are not reserved by you or have expired.');
             }
 
-            // Check if the user globally has reached the limit of 5 purchases
-            $userOwnedSeats = Seat::where('user_id', $user->id)->where('status', 'sold')->count();
-            if ($userOwnedSeats + $seatsToProcess->count() > 5) {
-                throw new \Exception('Limit of 5 purchased seats per person exceeded.');
+            $eventId = $seatsToProcess->first()->event_id;
+
+            // Check if the user has reached the limit of 5 purchases for this event
+            $userOwnedSeatsForEvent = Seat::where('user_id', $user->id)
+                ->where('event_id', $eventId)
+                ->where('status', 'sold')
+                ->count();
+                
+            if ($userOwnedSeatsForEvent + $seatsToProcess->count() > 5) {
+                throw new \Exception('Límit de 5 entrades per persona superada per a aquest esdeveniment.');
             }
 
             // Update all seats

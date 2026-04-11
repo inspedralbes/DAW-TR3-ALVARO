@@ -138,23 +138,25 @@ class EventController extends Controller
 
     // ── Admin stats ───────────────────────────────────────────────────────
 
-    public function adminStats()
+    public function adminStats(Request $request)
     {
-        $stats = Seat::select('status', DB::raw('count(*) as count'))
-            ->groupBy('status')
-            ->get()
-            ->keyBy('status');
+        $queryStats = Seat::select('status', \Illuminate\Support\Facades\DB::raw('count(*) as count'));
+        if ($request->has('event_id') && $request->event_id) {
+            $queryStats->where('event_id', $request->event_id);
+        }
+        $stats = $queryStats->groupBy('status')->get()->keyBy('status');
 
         $available = $stats->get('available')?->count ?? 0;
         $reserved  = $stats->get('reserved')?->count ?? 0;
         $sold      = $stats->get('sold')?->count ?? 0;
         $total     = $available + $reserved + $sold;
 
-        $activeReservations = Seat::where('status', 'reserved')
-            ->select('id', 'event_id', 'row', 'number', 'session_id', 'reserved_at', 'price')
-            ->orderBy('reserved_at', 'desc')
-            ->take(20)
-            ->get();
+        $queryRes = Seat::where('status', 'reserved')
+            ->select('id', 'event_id', 'row', 'number', 'session_id', 'reserved_at', 'price');
+        if ($request->has('event_id') && $request->event_id) {
+            $queryRes->where('event_id', $request->event_id);
+        }
+        $activeReservations = $queryRes->orderBy('reserved_at', 'desc')->take(20)->get();
 
         return response()->json([
             'stats'               => compact('available', 'reserved', 'sold', 'total'),

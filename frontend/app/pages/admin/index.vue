@@ -52,7 +52,6 @@
         class="hidden md:flex items-center gap-2 text-xs text-on-surface-variant"
       >
         <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
-        <span>Temps real actiu</span>
       </div>
 
       <!-- User info + Logout -->

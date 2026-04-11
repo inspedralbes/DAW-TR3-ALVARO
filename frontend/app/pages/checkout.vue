@@ -19,7 +19,7 @@
       class="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 flex items-center px-6 h-16 gap-4"
     >
       <NuxtLink
-        to="/event/1"
+        :to="'/event/' + eventId"
         class="flex items-center gap-2 text-on-surface-variant hover:text-on-surface transition-colors group"
       >
         <span
@@ -27,7 +27,7 @@
           >arrow_back</span
         >
         <span class="font-headline text-sm uppercase tracking-wider"
-          >Back to Seat Map</span
+          >Tornar al plànol</span
         >
       </NuxtLink>
       <div class="flex-1"></div>
@@ -47,17 +47,16 @@
         >timer_off</span
       >
       <h1 class="font-headline text-3xl font-bold text-on-surface">
-        Reservation Expired
+        Reserva Caducada
       </h1>
       <p class="text-on-surface-variant text-center max-w-md">
-        Your seat reservation has timed out after 10 minutes. Please go back and
-        select your seats again.
+        La teva reserva de seients ha esgotat el temps de límit (10 minuts). Si us plau, torna i selecciona els teus seients de nou.
       </p>
       <NuxtLink
-        to="/event/1"
+        :to="'/event/' + eventId"
         class="px-8 py-4 signature-pulse text-on-secondary-fixed font-bold rounded-xl uppercase tracking-widest hover:scale-105 transition-transform"
       >
-        Choose Seats Again
+        Tornar a Escollir Seients
       </NuxtLink>
     </div>
 
@@ -76,11 +75,10 @@
       <h1
         class="font-headline text-4xl font-bold text-on-surface text-center mt-2"
       >
-        Purchase Complete!
+        Compra Completada!
       </h1>
       <p class="text-on-surface-variant text-center max-w-md">
-        Your tickets have been confirmed. Check your email for details. See you
-        at the show! 🎶
+        Les teves entrades s'han confirmat correctament. Consulta el teu correu electrònic. Ens veiem al concert! 🎶
       </p>
       <div
         class="glass-panel rounded-2xl p-6 border border-white/10 w-full max-w-sm text-center"
@@ -88,7 +86,7 @@
         <p
           class="text-on-surface-variant text-xs uppercase tracking-wider mb-1"
         >
-          Confirmation #
+          Núm Confirmació
         </p>
         <p class="font-headline font-bold text-xl text-primary">
           {{ confirmationCode }}
@@ -98,7 +96,7 @@
         to="/"
         class="px-8 py-4 bg-surface-container-high border border-primary/20 text-primary font-bold rounded-xl uppercase tracking-widest hover:bg-primary/10 transition-all"
       >
-        Back to Events
+        Tornar als Esdeveniments
       </NuxtLink>
     </div>
 
@@ -110,10 +108,10 @@
       <!-- Left: Form -->
       <section class="flex-1">
         <h1 class="font-headline text-3xl font-bold text-on-surface mb-2">
-          Complete Your Order
+          Completa la Teva Comanda
         </h1>
         <p class="text-on-surface-variant mb-8">
-          Fill in your details to secure your tickets.
+          Introdueix les teves dades per assegurar les entrades.
         </p>
 
         <form @submit.prevent="submitCheckout" class="space-y-6">
@@ -125,14 +123,14 @@
               class="font-headline text-lg font-bold text-on-surface flex items-center gap-2"
             >
               <span class="material-symbols-outlined text-primary">person</span>
-              Personal Details
+              Dades Personals
             </h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label
                   class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2"
-                  >First Name *</label
+                  >Nom *</label
                 >
                 <input
                   v-model="form.firstName"
@@ -145,13 +143,13 @@
               <div>
                 <label
                   class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2"
-                  >Last Name *</label
+                  >Cognoms *</label
                 >
                 <input
                   v-model="form.lastName"
                   type="text"
                   required
-                  placeholder="Johnson"
+                  placeholder="García"
                   class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-3 text-on-surface placeholder:text-outline focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/40 transition-all"
                 />
               </div>
@@ -160,24 +158,24 @@
             <div>
               <label
                 class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2"
-                >Email Address *</label
+                >Correu Electrònic *</label
               >
               <input
                 v-model="form.email"
                 type="email"
                 required
-                placeholder="alex@example.com"
+                placeholder="alex@exemple.cat"
                 class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-3 text-on-surface placeholder:text-outline focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/40 transition-all"
               />
               <p class="text-xs text-on-surface-variant mt-1">
-                Tickets will be sent to this address.
+                Les entrades s'enviaran a aquesta adreça electrònica.
               </p>
             </div>
 
             <div>
               <label
                 class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2"
-                >Phone (optional)</label
+                >Telèfon (opcional)</label
               >
               <input
                 v-model="form.phone"
@@ -198,13 +196,13 @@
               <span class="material-symbols-outlined text-tertiary"
                 >credit_card</span
               >
-              Payment Details
+              Dades de Pagament
             </h2>
 
             <div>
               <label
                 class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2"
-                >Card Number *</label
+                >Número de Targeta *</label
               >
               <input
                 v-model="form.cardNumber"
@@ -221,7 +219,7 @@
               <div>
                 <label
                   class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2"
-                  >Expiry *</label
+                  >Caducitat *</label
                 >
                 <input
                   v-model="form.expiry"
@@ -252,13 +250,13 @@
             <div>
               <label
                 class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2"
-                >Cardholder Name *</label
+                >Titular de la Targeta *</label
               >
               <input
                 v-model="form.cardName"
                 type="text"
                 required
-                placeholder="ALEX JOHNSON"
+                placeholder="ALEX GARCÍA"
                 class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-3 text-on-surface placeholder:text-outline focus:outline-none focus:border-tertiary/60 focus:ring-1 focus:ring-tertiary/40 transition-all uppercase tracking-wider"
               />
             </div>
@@ -274,13 +272,13 @@
               class="mt-1 w-4 h-4 rounded border-outline-variant bg-surface-container-lowest accent-primary"
             />
             <label for="terms" class="text-sm text-on-surface-variant">
-              I agree to the
+              Accepto les
               <a href="#" class="text-primary hover:underline"
-                >Terms of Service</a
+                >Condicions de Servei</a
               >
-              and
-              <a href="#" class="text-primary hover:underline">Refund Policy</a
-              >. I understand tickets are non-transferable.
+              i la
+              <a href="#" class="text-primary hover:underline">Política de Devolucions</a
+              >. Entenc que les entrades no són transferibles.
             </label>
           </div>
 
@@ -290,7 +288,7 @@
             :disabled="isSubmitting"
             class="xl:hidden w-full py-5 rounded-xl signature-pulse text-white font-headline font-bold text-lg uppercase tracking-widest shadow-[0_0_30px_rgba(255,171,243,0.25)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {{ isSubmitting ? "Processing..." : `Pay €${totalFromQuery}` }}
+            {{ isSubmitting ? "Processant..." : `Pagar €${totalFromQuery}` }}
           </button>
         </form>
       </section>
@@ -320,8 +318,8 @@
             >
               {{
                 timeLeft < 120
-                  ? "⚠ Expiring soon!"
-                  : "Time to complete purchase"
+                  ? "⚠ Caduca aviat!"
+                  : "Temps restant per comprar"
               }}
             </p>
             <p
@@ -339,10 +337,10 @@
         >
           <div class="px-6 py-5 border-b border-white/5">
             <h2 class="font-headline text-lg font-bold text-on-surface">
-              Order Summary
+              Resum de la Comanda
             </h2>
             <p class="text-xs text-on-surface-variant mt-1">
-              THE VOID • World Tour 2024 • Stadium Arena, Barcelona
+              {{ eventTitle || 'CONCERT' }} • {{ eventVenue || 'RECINTE' }}
             </p>
           </div>
 
@@ -363,10 +361,10 @@
                 </div>
                 <div>
                   <p class="font-headline text-sm font-bold text-on-surface">
-                    Seat #{{ seatId }}
+                    Seient ID: #{{ seatId }}
                   </p>
                   <p class="text-xs text-on-surface-variant">
-                    General Admission • Electronic
+                    Entrada Electrònica
                   </p>
                 </div>
               </div>
@@ -379,11 +377,11 @@
           <!-- Pricing breakdown -->
           <div class="px-6 py-5 space-y-3 border-t border-white/5">
             <div class="flex justify-between text-sm text-on-surface-variant">
-              <span>Subtotal ({{ seatIds.length }} tickets)</span>
+              <span>Subtotal ({{ seatIds.length }} entrades)</span>
               <span>€{{ subtotal.toFixed(2) }}</span>
             </div>
             <div class="flex justify-between text-sm text-on-surface-variant">
-              <span>Service fee</span>
+              <span>Despeses de gestió</span>
               <span>€{{ serviceFee.toFixed(2) }}</span>
             </div>
             <div
@@ -403,19 +401,19 @@
             <span class="material-symbols-outlined text-sm text-tertiary"
               >lock</span
             >
-            SSL Encrypted
+            Xifrat SSL
           </div>
           <div class="flex items-center gap-1.5 text-xs">
             <span class="material-symbols-outlined text-sm text-tertiary"
               >shield</span
             >
-            Fraud Protected
+            Protecció Antifrau
           </div>
           <div class="flex items-center gap-1.5 text-xs">
             <span class="material-symbols-outlined text-sm text-tertiary"
               >verified</span
             >
-            Verified Seller
+            Venedor Verificat
           </div>
         </div>
 
@@ -425,24 +423,50 @@
           :disabled="isSubmitting"
           class="hidden xl:block w-full py-5 rounded-xl signature-pulse text-white font-headline font-bold text-lg uppercase tracking-widest shadow-[0_0_30px_rgba(255,171,243,0.25)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {{ isSubmitting ? "Processing..." : `Pay €${grandTotal.toFixed(2)}` }}
+          {{ isSubmitting ? "Processant..." : `Pagar €${grandTotal.toFixed(2)}` }}
         </button>
 
         <p
           class="text-center text-[10px] text-outline font-body uppercase tracking-tighter opacity-60"
         >
-          By completing purchase you agree to our terms. Tickets are
-          non-refundable.
+          En completar la compra acceptes els nostres termes. Les entrades no són reemborsables.
         </p>
       </aside>
     </main>
+
+    <!-- Custom Error Modal -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition duration-300 ease-out"
+        enter-from-class="transform scale-95 opacity-0"
+        enter-to-class="transform scale-100 opacity-100"
+        leave-active-class="transition duration-200 ease-in"
+        leave-from-class="transform scale-100 opacity-100"
+        leave-to-class="transform scale-95 opacity-0"
+      >
+        <div v-if="errorAlert" class="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" @click="errorAlert = null"></div>
+          <div class="relative w-full max-w-sm bg-surface-container rounded-2xl border border-error/50 shadow-2xl z-10 p-7 text-center">
+            <div class="w-16 h-16 rounded-full bg-error/15 border border-error/30 flex items-center justify-center mx-auto mb-5">
+              <span class="material-symbols-outlined text-error text-3xl">error</span>
+            </div>
+            <h3 class="font-headline font-bold text-on-surface text-lg mb-2">Atenció</h3>
+            <p class="text-on-surface-variant text-sm mb-7">{{ errorAlert }}</p>
+            <button @click="errorAlert = null" class="w-full py-3 rounded-xl bg-error/20 border border-error/30 text-error font-bold hover:bg-error/30 transition-colors text-sm uppercase tracking-wider">
+              D'acord
+            </button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
   </div>
 </template>
 
 <script setup>
 useHead({
   title: "Checkout | TICKETMONSTER",
-  htmlAttrs: { class: "dark", lang: "en" },
+  htmlAttrs: { class: "dark", lang: "ca" },
   link: [
     { rel: "preconnect", href: "https://fonts.googleapis.com" },
     {
@@ -472,6 +496,9 @@ const seatIds = computed(() => {
 
 const sessionId = computed(() => route.query.session || "");
 const totalFromQuery = computed(() => route.query.total || "0");
+const eventId = computed(() => route.query.eventId || "1");
+const eventTitle = computed(() => route.query.eventTitle || "");
+const eventVenue = computed(() => route.query.eventVenue || "");
 const pricePerSeat = 50;
 const subtotal = computed(() => seatIds.value.length * pricePerSeat);
 const serviceFee = computed(
@@ -503,8 +530,23 @@ onMounted(() => {
   }, 1000);
 });
 
-onUnmounted(() => {
+onUnmounted(async () => {
   if (countdownInterval) clearInterval(countdownInterval);
+
+  // If the component is closed / user navigates back without success, release the seats dynamically.
+  if (!isSuccess.value && seatIds.value.length > 0 && sessionId.value) {
+    try {
+      for (const seatId of seatIds.value) {
+        // Enviar silenciosamente la solicitud para liberar la sala en background
+        $fetch(`${config.public.apiUrl}/api/seats/release`, {
+          method: "POST",
+          body: { seat_id: seatId, session_id: sessionId.value },
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn("No s'han pogut des-reservar els seients: ", e);
+    }
+  }
 });
 
 // Form state
@@ -533,6 +575,7 @@ onMounted(() => {
 const isSubmitting = ref(false);
 const isSuccess = ref(false);
 const confirmationCode = ref("");
+const errorAlert = ref(null);
 
 const formatCard = (e) => {
   let val = e.target.value.replace(/\D/g, "").substring(0, 16);
@@ -556,11 +599,11 @@ const submitCheckout = async () => {
     !form.cvv ||
     !form.cardName
   ) {
-    alert("Please fill in all required fields.");
+    errorAlert.value = "Si us plau, emplena tots els camps obligatoris abans de continuar.";
     return;
   }
   if (!form.acceptTerms) {
-    alert("Please accept the terms and conditions.");
+    errorAlert.value = "Has d'acceptar els Termes de Servei i la Política de Devolucions.";
     return;
   }
 
@@ -588,7 +631,7 @@ const submitCheckout = async () => {
     }
   } catch (e) {
     const msg = e.response?._data?.error || e.message;
-    alert("Payment failed: " + msg);
+    errorAlert.value = "El pagament ha fallat: " + msg;
   } finally {
     isSubmitting.value = false;
   }

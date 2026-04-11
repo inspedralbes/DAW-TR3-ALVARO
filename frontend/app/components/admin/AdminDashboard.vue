@@ -12,26 +12,41 @@
         </h1>
         <p class="text-on-surface-variant text-sm mt-1 flex items-center gap-2">
           <span class="material-symbols-outlined text-sm">schedule</span>
-          <!-- l'actualització es fa automàticament cada 30s -->
           Actualitzat fa {{ secondsSinceRefresh }}s
         </p>
       </div>
-      <button
-        @click="refresh"
-        :class="[
-          'flex items-center gap-2 px-4 py-2.5 rounded-xl border font-headline font-bold text-sm transition-all',
-          statsLoading
-            ? 'border-white/10 text-on-surface-variant cursor-wait'
-            : 'border-primary/30 text-primary hover:bg-primary/10',
-        ]"
-      >
+
+      <!-- Event Filter & Controls -->
+      <div class="flex items-center gap-4">
+        <!-- Selector de Concierto -->
+        <select 
+          v-model="selectedEventId" 
+          @change="refresh"
+          class="bg-surface-container-high border border-outline-variant/30 text-on-surface text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all font-headline font-bold uppercase tracking-wider min-w-[200px]"
+        >
+          <option :value="null">Tots els Concerts (Global)</option>
+          <option v-for="event in store.events" :key="event.id" :value="event.id">
+            {{ event.title }}
+          </option>
+        </select>
+
+        <button
+          @click="refresh"
+          :class="[
+            'flex items-center gap-2 px-4 py-2.5 rounded-xl border font-headline font-bold text-sm transition-all',
+            statsLoading
+              ? 'border-white/10 text-on-surface-variant cursor-wait'
+              : 'border-primary/30 text-primary hover:bg-primary/10',
+          ]"
+        >
         <span
           class="material-symbols-outlined text-base"
           :class="{ 'animate-spin': statsLoading }"
           >refresh</span
         >
         Actualitzar
-      </button>
+        </button>
+      </div>
     </div>
 
     <!-- Stat cards -->
@@ -202,7 +217,6 @@
             {{ store.activeReservations.length }}
           </span>
         </h2>
-        <span class="text-xs text-on-surface-variant">Màxim 10 minuts</span>
       </div>
 
       <div
@@ -300,6 +314,7 @@ const statsLoading = ref(false);
 let pollInterval = null;
 let clockInterval = null;
 const secondsSinceRefresh = ref(0);
+const selectedEventId = ref(null);
 
 const timeAgo = (dateStr) => {
   if (!dateStr) return "—";
@@ -311,7 +326,7 @@ const timeAgo = (dateStr) => {
 
 const refresh = async () => {
   statsLoading.value = true;
-  await store.fetchStats();
+  await store.fetchStats(selectedEventId.value);
   lastRefresh.value = Date.now();
   secondsSinceRefresh.value = 0;
   statsLoading.value = false;
@@ -371,6 +386,7 @@ const statCards = computed(() => [
 ]);
 
 onMounted(async () => {
+  await store.fetchEvents(); // Cargar la lista de eventos para el desplegable
   await refresh();
 
   $socket.on("clients_count", (count) => {

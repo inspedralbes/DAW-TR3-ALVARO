@@ -468,8 +468,14 @@ const submitForm = async () => {
       await store.updateEvent(editingEvent.value.id, payload)
       showToast('Esdeveniment actualitzat correctament', 'success')
     } else {
-      await store.createEvent(payload)
-      showToast('Esdeveniment creat correctament', 'success')
+      const result = await store.createEvent(payload)
+      
+      // Auto-generar asientos inmediatamente tras la creación del evento
+      if (result && result.event && result.event.id) {
+        await store.generateSeats(result.event.id)
+      }
+      
+      showToast('Esdeveniment i seients creats correctament', 'success')
     }
     closeModal()
   } catch (e) {

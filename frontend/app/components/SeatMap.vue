@@ -1,11 +1,18 @@
 <script setup>
 import { onMounted, onUnmounted, ref, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useSeatStore } from "~/stores/seatStore";
 
 const seatStore = useSeatStore();
 const authStore = useAuthStore();
 const { $socket } = useNuxtApp();
+const route = useRoute();
 const router = useRouter();
+const eventId = route.params.id;
+
+const currentEvent = computed(() => {
+  return seatStore.seats.length > 0 && seatStore.seats[0].event ? seatStore.seats[0].event : null;
+});
 
 // Unified toast notification system
 const toast = ref({ show: false, message: "", title: "", type: "info" });
@@ -41,7 +48,7 @@ onMounted(async () => {
     );
   }
 
-  await seatStore.fetchSeats();
+  await seatStore.fetchSeats(eventId);
 
   $socket.on("seat_updated", (data) => {
     // Si nos lo quitaron
@@ -115,6 +122,9 @@ const processCheckout = async () => {
     await router.push({
       path: "/checkout",
       query: {
+        eventId: eventId,
+        eventTitle: currentEvent.value?.title || '',
+        eventVenue: currentEvent.value?.venue || '',
         seats: Array.from(selectedSeats.value).join(","),
         session: seatStore.sessionId,
         total: totalAmount.value.toString(),
@@ -230,46 +240,27 @@ const zoneColors = computed(() => {
       </div>
     </nav>
 
-    <!-- SideNavBar (Map Focused Layout) -->
-    <aside
-      class="fixed left-0 top-0 h-screen w-20 border-r border-white/5 bg-slate-900 flex flex-col items-center py-20 gap-8 z-40 hidden md:flex"
-    >
-      <button
-        class="flex flex-col items-center justify-center text-blue-400 bg-blue-500/10 border-r-2 border-blue-500 w-full py-4 transition-all duration-300"
-      >
-        <span class="material-symbols-outlined">map</span>
-        <span class="font-label text-[10px] tracking-wide uppercase mt-1"
-          >Map</span
-        >
-      </button>
-      <button
-        class="flex flex-col items-center justify-center text-slate-500 hover:text-slate-300 w-full py-4 transition-all duration-300"
-      >
-        <span class="material-symbols-outlined">payments</span>
-        <span class="font-label text-[10px] tracking-wide uppercase mt-1"
-          >Price</span
-        >
-      </button>
-    </aside>
-
     <!-- Main Content Canvas -->
-    <main class="pt-20 pb-24 md:pl-20 md:pr-[400px] min-h-screen">
+    <main class="pt-20 pb-24 md:pr-[400px] min-h-screen">
       <header class="px-6 py-8">
         <div
           class="flex flex-col md:flex-row md:items-end justify-between gap-6"
         >
           <div>
             <span
-              class="text-primary-fixed font-label text-xs tracking-[0.2em] uppercase mb-2 block"
-              >World Tour / 2024</span
+              class="text-primary-fixed font-label text-xs tracking-[0.2em] uppercase mb-2 block flex items-center gap-2"
             >
+              <span class="material-symbols-outlined text-sm">event</span>
+              {{ currentEvent?.date ? new Date(currentEvent.date).toLocaleDateString('ca-ES') : 'Data pendent' }}
+            </span>
             <h1
               class="text-5xl md:text-7xl font-headline font-bold tracking-tighter text-on-background leading-none"
             >
-              THE VOID
+              {{ currentEvent?.title || 'SELECCIONA UN ESDEVENIMENT' }}
             </h1>
-            <p class="text-on-surface-variant font-body text-lg mt-2">
-              Stadium Arena • Barcelona, ES
+            <p class="text-on-surface-variant font-body text-lg mt-2 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-lg">location_on</span>
+              {{ currentEvent?.venue || 'Sense recinte especificat' }}
             </p>
           </div>
         </div>

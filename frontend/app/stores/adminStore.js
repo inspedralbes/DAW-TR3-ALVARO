@@ -31,12 +31,13 @@ export const useAdminStore = defineStore('adminStore', {
   },
 
   actions: {
-    async fetchStats() {
+    async fetchStats(eventId = null) {
       this.statsLoading = true
       try {
         const config = useRuntimeConfig()
         const authStore = useAuthStore()
-        const data = await $fetch(`${config.public.apiUrl}/api/admin/stats`, {
+        const query = eventId ? `?event_id=${eventId}` : ''
+        const data = await $fetch(`${config.public.apiUrl}/api/admin/stats${query}`, {
           headers: authStore.authHeaders(),
         })
         this.stats = data.stats

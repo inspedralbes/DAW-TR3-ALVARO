@@ -9,11 +9,12 @@ export const useSeatStore = defineStore('seatStore', {
   }),
 
   actions: {
-    async fetchSeats() {
+    async fetchSeats(eventId = null) {
       this.loading = true
       try {
         const config = useRuntimeConfig()
-        const data = await $fetch(`${config.public.apiUrl}/api/seats`)
+        const url = eventId ? `/api/seats?event_id=${eventId}` : `/api/seats`
+        const data = await $fetch(`${config.public.apiUrl}${url}`)
         this.seats = data
       } catch (err) {
         this.error = err.message
