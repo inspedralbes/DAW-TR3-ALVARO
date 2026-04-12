@@ -86,6 +86,7 @@
       <Transition name="tab-fade" mode="out-in">
         <AdminDashboard v-if="activeTab === 'dashboard'" />
         <AdminEventManager v-else-if="activeTab === 'events'" />
+        <AdminReports v-else-if="activeTab === 'reports'" />
       </Transition>
     </main>
   </div>
@@ -94,6 +95,7 @@
 <script setup>
 import AdminDashboard from "~/components/admin/AdminDashboard.vue";
 import AdminEventManager from "~/components/admin/AdminEventManager.vue";
+import AdminReports from "~/components/admin/AdminReports.vue";
 
 definePageMeta({ middleware: "admin" });
 
@@ -109,6 +111,7 @@ const router = useRouter();
 const tabs = [
   { id: "dashboard", label: "Dashboard", icon: "dashboard" },
   { id: "events", label: "Esdeveniments", icon: "event_note" },
+  { id: "reports", label: "Informes", icon: "monitoring" },
 ];
 
 const handleLogout = async () => {

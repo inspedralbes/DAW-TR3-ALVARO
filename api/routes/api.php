@@ -33,6 +33,7 @@ Route::prefix('admin')
     ->middleware(['auth:sanctum', 'ensure.admin'])
     ->group(function () {
         Route::get('/stats',                              [EventController::class, 'adminStats']);
+        Route::get('/reports',                            [EventController::class, 'adminReports']);
         Route::post('/events',                            [EventController::class, 'store']);
         Route::put('/events/{id}',                        [EventController::class, 'update']);
         Route::delete('/events/{id}',                     [EventController::class, 'destroy']);

@@ -40,7 +40,21 @@
           >
         </nav>
         <div class="flex items-center space-x-3">
+          <!-- Admin link -->
+          <NuxtLink
+            v-if="authStore.isAdmin"
+            to="/admin"
+            class="flex items-center gap-2 px-4 py-2 rounded-xl border border-fuchsia-500/30 text-fuchsia-400 hover:bg-fuchsia-500/10 transition-all text-sm font-bold"
+          >
+            <span class="material-symbols-outlined text-base"
+              >admin_panel_settings</span
+            >
+            <span class="hidden sm:inline">Admin</span>
+          </NuxtLink>
+
+          <!-- User chip -->
           <div
+            v-else
             class="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 text-zinc-400 text-sm"
           >
             <span class="material-symbols-outlined text-base text-fuchsia-500"

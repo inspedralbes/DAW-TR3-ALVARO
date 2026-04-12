@@ -163,4 +163,45 @@ class EventController extends Controller
             'active_reservations' => $activeReservations,
         ]);
     }
+
+    public function adminReports(Request $request)
+    {
+        $query = \App\Models\Seat::query();
+        if ($request->has('event_id') && $request->event_id) {
+            $query->where('event_id', $request->event_id);
+        }
+
+        // Revenue calculations
+        $totalRevenue = (clone $query)->where('status', 'sold')->sum('price');
+
+        $seatsStats = (clone $query)->select('status', \Illuminate\Support\Facades\DB::raw('count(*) as count'))->groupBy('status')->get()->keyBy('status');
+        $soldCount = $seatsStats->get('sold')?->count ?? 0;
+
+        $averagePerTicket = $soldCount > 0 ? $totalRevenue / $soldCount : 0;
+        $occupancyPercentage = 0;
+
+        $available = $seatsStats->get('available')?->count ?? 0;
+        $reserved = $seatsStats->get('reserved')?->count ?? 0;
+        $totalSeats = $available + $reserved + $soldCount;
+        
+        if ($totalSeats > 0) {
+            $occupancyPercentage = round(($soldCount / $totalSeats) * 100, 2);
+        }
+
+        // Evolution of sales (grouped by day calculated from updated_at)
+        $salesEvolution = (clone $query)
+            ->where('status', 'sold')
+            ->select(\Illuminate\Support\Facades\DB::raw('DATE(updated_at) as date'), \Illuminate\Support\Facades\DB::raw('count(*) as count'), \Illuminate\Support\Facades\DB::raw('sum(price) as revenue'))
+            ->groupBy('date')
+            ->orderBy('date', 'asc')
+            ->get();
+
+        return response()->json([
+            'totalRevenue' => round($totalRevenue, 2),
+            'averagePerTicket' => round($averagePerTicket, 2),
+            'occupancyPercentage' => $occupancyPercentage,
+            'soldCount' => $soldCount,
+            'salesEvolution' => $salesEvolution
+        ]);
+    }
 }

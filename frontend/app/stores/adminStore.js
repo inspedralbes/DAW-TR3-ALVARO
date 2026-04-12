@@ -44,8 +44,27 @@ export const useAdminStore = defineStore('adminStore', {
         this.activeReservations = data.active_reservations
       } catch (err) {
         console.error('Admin stats error:', err)
+        this.error = err.message
       } finally {
         this.statsLoading = false
+      }
+    },
+
+    async fetchReports(eventId = null) {
+      this.loading = true
+      try {
+        const config = useRuntimeConfig()
+        const authStore = useAuthStore()
+        const query = eventId ? `?event_id=${eventId}` : ''
+        return await $fetch(`${config.public.apiUrl}/api/admin/reports${query}`, {
+          headers: authStore.authHeaders(),
+        })
+      } catch (err) {
+        console.error('Admin reports error:', err)
+        this.error = err.message
+        return null
+      } finally {
+        this.loading = false
       }
     },
 
