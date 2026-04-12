@@ -115,8 +115,8 @@
                 class="text-transparent bg-clip-text bg-gradient-to-r from-tertiary to-cyan-600 text-glow-tertiary"
                 >{{
                   featuredEvent
-                    ? featuredEvent.venue || formatEventDate(featuredEvent.date)
-                    : "Palau Sant Jordi, Barcelona"
+                    ? featuredEvent.title
+                    : "TICKETMONSTER EXCLUSIVE"
                 }}</span
               >
             </h1>
