@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'ensure.admin' => \App\Http\Middleware\EnsureIsAdmin::class,
         ]);
+        // CORS: Allow frontend origins in production and development
+        $middleware->append(\App\Http\Middleware\CorsMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
