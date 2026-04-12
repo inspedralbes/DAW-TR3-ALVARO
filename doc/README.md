@@ -11,8 +11,8 @@ Aquest manual proporciona els passos per tenir el projecte aixecat en qualsevol 
 
 ```bash
 # 1. Clonar el repositori
-git clone https://github.com/inspedralbes/projecte-final-2025-26-daw-metropoli_trfinal_grup3.git
-cd projecte-final-2025-26-daw-metropoli_trfinal_grup3
+git clone https://github.com/inspedralbes/prj-entrades-varito9.git
+cd prj-entrades-varito9
 
 # 2. Re-construir i aixecar l'orquestració de microserveis (Nuxt, Pdo_MySQL, Redis, Node.js WebSocket)
 docker compose up --build -d
@@ -46,4 +46,4 @@ A continuació es detalla l'arquitectura mitjançant la sintaxi i el format est�
 
 ### 1. Diagrama de Casos d'Ús (Actors i Opcions)
 
-<img src="./img/Concert Diagrama_casos_usos.drawio.png" alt="Diagrama de Casos d'Ús">
+![Diagrama de Casos d'Ús](img/Concert%20Diagrama_casos_usos.drawio.png)
