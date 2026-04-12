@@ -139,56 +139,6 @@
         </div>
       </section>
 
-      <!-- Search & Filter Bar -->
-      <section class="container mx-auto px-6 -mt-16 relative z-30">
-        <div
-          class="max-w-6xl mx-auto glass-panel bg-surface-container-low/80 rounded-3xl p-4 border border-outline-variant/10 shadow-2xl"
-        >
-          <div class="flex flex-col md:flex-row items-center gap-4">
-            <div class="flex-1 w-full relative group">
-              <span
-                class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-tertiary transition-colors"
-                >search</span
-              >
-              <input
-                class="w-full bg-surface-container-lowest border-none rounded-2xl pl-12 pr-4 py-4 focus:ring-1 focus:ring-tertiary text-on-surface placeholder:text-zinc-600 transition-all font-medium"
-                placeholder="Search artists, events, or cities..."
-                type="text"
-              />
-            </div>
-            <div class="flex flex-wrap md:flex-nowrap gap-2 w-full md:w-auto">
-              <button
-                class="flex-1 md:flex-none flex items-center gap-3 bg-surface-container-high px-6 py-4 rounded-2xl border border-outline-variant/5 hover:bg-zinc-800 transition-colors"
-              >
-                <span class="material-symbols-outlined text-secondary"
-                  >calendar_today</span
-                >
-                <span
-                  class="whitespace-nowrap font-headline font-medium text-sm"
-                  >Any Date</span
-                >
-              </button>
-              <button
-                class="flex-1 md:flex-none flex items-center gap-3 bg-surface-container-high px-6 py-4 rounded-2xl border border-outline-variant/5 hover:bg-zinc-800 transition-colors"
-              >
-                <span class="material-symbols-outlined text-tertiary"
-                  >location_on</span
-                >
-                <span
-                  class="whitespace-nowrap font-headline font-medium text-sm"
-                  >All Venues</span
-                >
-              </button>
-              <button
-                class="w-full md:w-auto px-8 py-4 signature-pulse text-on-secondary-fixed font-bold rounded-2xl uppercase tracking-widest text-sm hover:brightness-110"
-              >
-                Filter
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <!-- Upcoming Events Grid -->
       <section id="events" class="container mx-auto px-6 py-24">
         <div class="flex justify-between items-end mb-12">
@@ -349,30 +299,6 @@
       <div
         class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-12"
       >
-        <div
-          class="flex flex-wrap justify-center gap-10 font-headline text-sm tracking-wide"
-        >
-          <a
-            class="text-zinc-500 hover:text-fuchsia-400 transition-colors"
-            href="#"
-            >Privacy Policy</a
-          >
-          <a
-            class="text-zinc-500 hover:text-fuchsia-400 transition-colors"
-            href="#"
-            >Terms of Service</a
-          >
-          <a
-            class="text-zinc-500 hover:text-fuchsia-400 transition-colors"
-            href="#"
-            >Help Center</a
-          >
-          <a
-            class="text-zinc-500 hover:text-fuchsia-400 transition-colors"
-            href="#"
-            >Partner Portal</a
-          >
-        </div>
         <div
           class="text-zinc-600 text-[10px] tracking-[0.3em] uppercase font-bold"
         >
