@@ -38,12 +38,6 @@ Després d'executar el comandament de _seeding_ (`php artisan migrate:fresh --se
 - **Usuari Admin:** `admin@ticketmonster.com`
 - **Contrasenya:** `admin1234`
 
----
-
-## Diagrames d'Arquitectura Formal
-
-A continuació es detalla l'arquitectura mitjançant la sintaxi i el format estàndard _Mermaid UML_.
-
 ### 1. Diagrama de Casos d'Ús (Actors i Opcions)
 
 ![Diagrama de Casos d'Ús](img/Concert%20Diagrama_casos_usos.drawio.png)
