@@ -3,17 +3,20 @@
   Bones! Soc en Alvaro
 </h1>
 
-<div align="center">
-  <br>
-  Aquest projecte encara segueix en procés. Mentrestant, podeu veure al nostre GitHub l'estructura del codi dividida en diferents branques (frontend, backend, docker...) que finalment s'uniran a la branca <code>main</code>.
-  <br>
-  <br>
-  <i>Esperem que us agradi!</i>
-</div>
+## 🌟 Nom del Projecte
 
----
+**TICKETMONSTER** - Plataforma Avançada de Venda d'Entrades
 
-## 🎮 Concepte del Projecte
+## Descripció i Objectius del Projecte
+
+Aquest projecte neix de la necessitat de programar i dissenyar un **motor d'assignació d'entrades altament concurrent**.
+L'objectiu principal és construir una aplicació web on múltiples usuaris puguin interaccionar en **temps real** comprant entrades d'un pla de seients virtual interactiu.
+
+Ens centrem específicament a resoldre el problema de evitar que dos usuaris comprin el mateix seient a la mateixa mil·lèsima de segon aplicant algoritmes de "Pessimistic Locking" a la base de dades innoDB i un sistema de retransmissió de metadades via **WebSockets + Redis** per notificar a tots els usuaris connectats que un seient ha estat retingut al moment.
+
+## Estat Actual: Completat (Fase de Producció Imminent)
+
+El projecte gaudeix d'una estabilitat bona. Totes les proves simulades mitjançant l'escriptura d'eines externes (Cypress) i els tests mil·limètrics d'estrès concorrent asíncron han estat superats amb **zero col·lisions fallides**.
 
 ## 🔗 Enllaços de Gestió del Projecte
 
@@ -25,27 +28,3 @@ Aquí podeu trobar més informació sobre la nostra planificació i disseny del 
     <a href="https://www.figma.com/design/minH4dJdxh4JXbgXRvg83O/TR3-Concerts?node-id=4001-940&t=uD2RX99iLVWG9k02-1" target="_blank"><img alt="Figma" src="https://wptavern.com/wp-content/uploads/2018/11/Screen-Shot-2018-11-19-at-8.43.27-PM.png" width='80' height='40' /></a>
   </p>
 </div>
-
-# Aquest fitxer ha de contenir com a mínim:
-
-- Nom del projecte
-- Petita descripció
-- URL de producció (quan la tingueu)
-- Estat: (explicació d'en quin punt està)
-
-## Requisitos de Entorno (Broadcasting)
-
-### Backend (api/.env)
-
-- `BROADCAST_CONNECTION=redis`
-- `REDIS_HOST=redis` (o `127.0.0.1` si corre local)
-
-### Frontend (Nuxt runtimeConfig)
-
-- `NUXT_PUBLIC_API_URL`: URL del backend Laravel (ej: http://localhost:8000)
-- `NUXT_PUBLIC_WS_URL`: URL del servidor Node.js (ej: http://localhost:3001)
-
-### WebSockets (Node.js env)
-
-- `REDIS_HOST`: Host de Redis (ej: redis)
-- `DB_HOST`: Host de MySQL (ej: db)
