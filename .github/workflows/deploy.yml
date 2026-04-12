@@ -22,4 +22,6 @@ jobs:
             git pull origin main
             docker compose down
             docker compose up -d --build
+            docker exec ticket_api composer install --no-interaction --prefer-dist --optimize-autoloader
+            docker exec ticket_api php artisan key:generate --force
             docker exec ticket_api php artisan migrate:fresh --seed --force
