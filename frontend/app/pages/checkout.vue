@@ -459,11 +459,16 @@
         </div>
       </Transition>
     </Teleport>
+    
+    <!-- Assistència Directa (WebRTC) Widget -->
+    <SupportWidget />
 
   </div>
 </template>
 
 <script setup>
+import SupportWidget from "~/components/SupportWidget.vue";
+
 useHead({
   title: "Checkout | TICKETMONSTER",
   htmlAttrs: { class: "dark", lang: "ca" },

@@ -22,8 +22,7 @@ Aquí podeu trobar més informació sobre la nostra planificació i disseny del 
 <div align="center">
   <p>
     <a href="https://github.com/inspedralbes/projecte-final-2025-26-daw-metropoli_trfinal_grup3" target="_blank"><img alt="Github" src="https://img.shields.io/badge/GitHub-%2312100E.svg?&style=for-the-badge&logo=Github&logoColor=white" width='100' height='33' /></a>
-    <a href="https://tree.taiga.io/project/varitoo9-tr-final-metropolis/timeline" target="_blank"><img alt="Taiga" src="https://docs.taiga.io/imgs/logo.png" width='80' height='30' /></a>
-    <a href="https://www.figma.com/design/wRyC7cI7kPlNjkv4fzZvT6/ESQUEMA-PANTALLES-METR%C3%93POLIS?node-id=0-1&t=UPwO8UdS16RXq2Uv-1" target="_blank"><img alt="Figma" src="https://wptavern.com/wp-content/uploads/2018/11/Screen-Shot-2018-11-19-at-8.43.27-PM.png" width='80' height='40' /></a>
+    <a href="https://www.figma.com/design/minH4dJdxh4JXbgXRvg83O/TR3-Concerts?node-id=4001-940&t=uD2RX99iLVWG9k02-1" target="_blank"><img alt="Figma" src="https://wptavern.com/wp-content/uploads/2018/11/Screen-Shot-2018-11-19-at-8.43.27-PM.png" width='80' height='40' /></a>
   </p>
 </div>
 
@@ -37,13 +36,16 @@ Aquí podeu trobar més informació sobre la nostra planificació i disseny del 
 ## Requisitos de Entorno (Broadcasting)
 
 ### Backend (api/.env)
+
 - `BROADCAST_CONNECTION=redis`
 - `REDIS_HOST=redis` (o `127.0.0.1` si corre local)
 
 ### Frontend (Nuxt runtimeConfig)
+
 - `NUXT_PUBLIC_API_URL`: URL del backend Laravel (ej: http://localhost:8000)
 - `NUXT_PUBLIC_WS_URL`: URL del servidor Node.js (ej: http://localhost:3001)
 
 ### WebSockets (Node.js env)
+
 - `REDIS_HOST`: Host de Redis (ej: redis)
 - `DB_HOST`: Host de MySQL (ej: db)

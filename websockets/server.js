@@ -131,12 +131,69 @@ app.get("/api/health", async (req, res) => {
 io.on("connection", (socket) => {
   console.log(`Cliente Nuxt conectado: ${socket.id}`);
 
-  // Broadcast current client count to all (including admin dashboard)
-  io.emit("clients_count", io.engine.clientsCount);
+  // Permite solicitar activamente cuántos hay al entrar a un dashboard
+  socket.on("request_clients_count", () => {
+    socket.emit("clients_count", io.engine.clientsCount);
+  });
+
+  // --- WebRTC Signaling (1-to-1 Live Support) ---
+  socket.on("support_request", (data) => {
+    console.log(`[WebRTC] Client request support: ${socket.id}`);
+    io.emit("support_request_received", {
+      userId: socket.id,
+      message: "Sol·licita assistència de pagament",
+      userName: data?.userName || "Client Anònim"
+    });
+  });
+
+  socket.on("support_cancel", () => {
+    console.log(`[WebRTC] Client cancelled support request: ${socket.id}`);
+    io.emit("support_request_cancelled", { userId: socket.id });
+  });
+
+  socket.on("support_accept", (data) => {
+    console.log(`[WebRTC] Admin ${socket.id} accepted call from User ${data.targetId}`);
+    // Inform user who was waiting
+    io.to(data.targetId).emit("support_accepted", { adminId: socket.id });
+    // Tell other admins to clear it from their queue
+    socket.broadcast.emit("support_request_handled", { userId: data.targetId, adminId: socket.id });
+  });
+
+  socket.on("webrtc_offer", (payload) => {
+    console.log(`[WebRTC] Offer from ${socket.id} to ${payload.target}`);
+    io.to(payload.target).emit("webrtc_offer", {
+      sdp: payload.sdp,
+      caller: socket.id
+    });
+  });
+
+  socket.on("webrtc_answer", (payload) => {
+    console.log(`[WebRTC] Answer from ${socket.id} to ${payload.target}`);
+    io.to(payload.target).emit("webrtc_answer", {
+      sdp: payload.sdp,
+      answerer: socket.id
+    });
+  });
+
+  socket.on("webrtc_ice_candidate", (payload) => {
+    io.to(payload.target).emit("webrtc_ice_candidate", {
+      candidate: payload.candidate,
+      sender: socket.id
+    });
+  });
+
+  socket.on("webrtc_end", (payload) => {
+    console.log(`[WebRTC] Call ended by ${socket.id} to ${payload.target}`);
+    io.to(payload.target).emit("webrtc_ended", { sender: socket.id });
+  });
+  // ----------------------------------------------
 
   socket.on("disconnect", () => {
     console.log(`Cliente desconectado: ${socket.id}`);
     io.emit("clients_count", io.engine.clientsCount);
+    // Notify clients in case they were in a call
+    io.emit("support_request_cancelled", { userId: socket.id });
+    io.emit("webrtc_ended", { sender: socket.id });
   });
 });
 

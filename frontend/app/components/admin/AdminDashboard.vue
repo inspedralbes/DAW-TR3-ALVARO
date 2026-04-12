@@ -198,6 +198,9 @@
       </div>
     </div>
 
+    <!-- Admin Support / WebRTC Component -->
+    <AdminSupportQueue />
+
     <!-- Active reservations -->
     <div class="glass-panel rounded-2xl border border-white/10 overflow-hidden">
       <div
@@ -303,6 +306,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useAdminStore } from "~/stores/adminStore";
+import AdminSupportQueue from "~/components/admin/AdminSupportQueue.vue";
 
 const store = useAdminStore();
 const { $socket } = useNuxtApp();
@@ -397,6 +401,8 @@ onMounted(async () => {
   $socket.on("clients_count", (count) => {
     connectedClients.value = count;
   });
+
+  $socket.emit("request_clients_count");
 
   $socket.on("seat_updated", () => {
     store.fetchStats();
