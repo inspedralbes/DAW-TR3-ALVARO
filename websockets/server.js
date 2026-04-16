@@ -136,13 +136,13 @@ io.on("connection", (socket) => {
     socket.emit("clients_count", io.engine.clientsCount);
   });
 
-  // --- WebRTC Signaling (1-to-1 Live Support) ---
+  // --- WebRTC (1 a 1 en Directe) ---
   socket.on("support_request", (data) => {
     console.log(`[WebRTC] Client request support: ${socket.id}`);
     io.emit("support_request_received", {
       userId: socket.id,
       message: "Sol·licita assistència de pagament",
-      userName: data?.userName || "Client Anònim"
+      userName: data?.userName || "Client Anònim",
     });
   });
 
@@ -152,18 +152,23 @@ io.on("connection", (socket) => {
   });
 
   socket.on("support_accept", (data) => {
-    console.log(`[WebRTC] Admin ${socket.id} accepted call from User ${data.targetId}`);
-    // Inform user who was waiting
+    console.log(
+      `[WebRTC] Admin ${socket.id} accepted call from User ${data.targetId}`,
+    );
+    // Informem a l'usuari que ha estat acceptat
     io.to(data.targetId).emit("support_accepted", { adminId: socket.id });
-    // Tell other admins to clear it from their queue
-    socket.broadcast.emit("support_request_handled", { userId: data.targetId, adminId: socket.id });
+    // Informem a la resta d'admins que ja no hi ha sol·licitud
+    socket.broadcast.emit("support_request_handled", {
+      userId: data.targetId,
+      adminId: socket.id,
+    });
   });
 
   socket.on("webrtc_offer", (payload) => {
     console.log(`[WebRTC] Offer from ${socket.id} to ${payload.target}`);
     io.to(payload.target).emit("webrtc_offer", {
       sdp: payload.sdp,
-      caller: socket.id
+      caller: socket.id,
     });
   });
 
@@ -171,14 +176,14 @@ io.on("connection", (socket) => {
     console.log(`[WebRTC] Answer from ${socket.id} to ${payload.target}`);
     io.to(payload.target).emit("webrtc_answer", {
       sdp: payload.sdp,
-      answerer: socket.id
+      answerer: socket.id,
     });
   });
 
   socket.on("webrtc_ice_candidate", (payload) => {
     io.to(payload.target).emit("webrtc_ice_candidate", {
       candidate: payload.candidate,
-      sender: socket.id
+      sender: socket.id,
     });
   });
 
@@ -191,7 +196,7 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log(`Cliente desconectado: ${socket.id}`);
     io.emit("clients_count", io.engine.clientsCount);
-    // Notify clients in case they were in a call
+    // Notifiquem
     io.emit("support_request_cancelled", { userId: socket.id });
     io.emit("webrtc_ended", { sender: socket.id });
   });

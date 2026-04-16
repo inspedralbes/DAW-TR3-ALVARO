@@ -320,23 +320,6 @@
         >
       </button>
       <NuxtLink
-        to="/event/1"
-        class="flex flex-col items-center justify-center text-zinc-500 active:bg-white/5 transition-all active:scale-110 duration-300"
-      >
-        <span class="material-symbols-outlined">confirmation_number</span>
-        <span class="font-body text-[10px] uppercase tracking-widest mt-1"
-          >Tickets</span
-        >
-      </NuxtLink>
-      <button
-        class="flex flex-col items-center justify-center text-zinc-500 active:bg-white/5 transition-all active:scale-110 duration-300"
-      >
-        <span class="material-symbols-outlined">hourglass_empty</span>
-        <span class="font-body text-[10px] uppercase tracking-widest mt-1"
-          >Waitlist</span
-        >
-      </button>
-      <NuxtLink
         to="/my-tickets"
         class="flex flex-col items-center justify-center text-zinc-500 active:bg-white/5 transition-all active:scale-110 duration-300"
       >
