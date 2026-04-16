@@ -316,7 +316,7 @@
       >
         <span class="material-symbols-outlined">explore</span>
         <span class="font-body text-[10px] uppercase tracking-widest mt-1"
-          >Explore</span
+          >Explorar</span
         >
       </button>
       <NuxtLink
@@ -325,7 +325,7 @@
       >
         <span class="material-symbols-outlined">person</span>
         <span class="font-body text-[10px] uppercase tracking-widest mt-1"
-          >My Tickets</span
+          >Entrades</span
         >
       </NuxtLink>
     </nav>

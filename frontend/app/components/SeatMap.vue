@@ -11,7 +11,9 @@ const router = useRouter();
 const eventId = route.params.id;
 
 const currentEvent = computed(() => {
-  return seatStore.seats.length > 0 && seatStore.seats[0].event ? seatStore.seats[0].event : null;
+  return seatStore.seats.length > 0 && seatStore.seats[0].event
+    ? seatStore.seats[0].event
+    : null;
 });
 
 // Unified toast notification system
@@ -123,8 +125,8 @@ const processCheckout = async () => {
       path: "/checkout",
       query: {
         eventId: eventId,
-        eventTitle: currentEvent.value?.title || '',
-        eventVenue: currentEvent.value?.venue || '',
+        eventTitle: currentEvent.value?.title || "",
+        eventVenue: currentEvent.value?.venue || "",
         seats: Array.from(selectedSeats.value).join(","),
         session: seatStore.sessionId,
         total: totalAmount.value.toString(),
@@ -149,34 +151,44 @@ const processCheckout = async () => {
 };
 
 const getSeatStyle = (seat) => {
-  const color = seat.zone_color || '#6366f1'; // fallback indigo
+  const color = seat.zone_color || "#6366f1"; // fallback indigo
 
   if (selectedSeats.value.has(seat.id)) {
     return { backgroundColor: color, opacity: 1 };
   }
   switch (seat.status) {
-    case 'available': return { backgroundColor: color, opacity: 1 };
-    case 'reserved':  return { 
-      backgroundColor: color, 
-      backgroundImage: 'repeating-linear-gradient(45deg, rgba(0,0,0,0.5), rgba(0,0,0,0.5) 4px, transparent 4px, transparent 8px)',
-      opacity: 0.8 
-    };
-    case 'sold':      return { backgroundColor: color, opacity: 0.15 };
-    default:          return { backgroundColor: color, opacity: 0.5 };
+    case "available":
+      return { backgroundColor: color, opacity: 1 };
+    case "reserved":
+      return {
+        backgroundColor: color,
+        backgroundImage:
+          "repeating-linear-gradient(45deg, rgba(0,0,0,0.5), rgba(0,0,0,0.5) 4px, transparent 4px, transparent 8px)",
+        opacity: 0.8,
+      };
+    case "sold":
+      return { backgroundColor: color, opacity: 0.15 };
+    default:
+      return { backgroundColor: color, opacity: 0.5 };
   }
 };
 
 const getSeatClass = (seat) => {
-  const base = 'relative w-full aspect-square rounded-sm transition-all duration-200 flex items-center justify-center overflow-hidden';
+  const base =
+    "relative w-full aspect-square rounded-sm transition-all duration-200 flex items-center justify-center overflow-hidden";
   if (selectedSeats.value.has(seat.id)) {
     // Borde brillante fluorescente para destacar
     return `${base} scale-110 ring-[3px] ring-[#00ffff] shadow-[0_0_15px_rgba(0,255,255,0.9)] z-10 cursor-pointer`;
   }
   switch (seat.status) {
-    case 'available': return `${base} hover:scale-125 hover:ring-2 hover:ring-[#00ffff]/60 cursor-pointer`;
-    case 'reserved':  return `${base} cursor-not-allowed`;
-    case 'sold':      return `${base} cursor-not-allowed`;
-    default:          return `${base} bg-slate-500 opacity-30`;
+    case "available":
+      return `${base} hover:scale-125 hover:ring-2 hover:ring-[#00ffff]/60 cursor-pointer`;
+    case "reserved":
+      return `${base} cursor-not-allowed`;
+    case "sold":
+      return `${base} cursor-not-allowed`;
+    default:
+      return `${base} bg-slate-500 opacity-30`;
   }
 };
 
@@ -251,43 +263,84 @@ const zoneColors = computed(() => {
               class="text-primary-fixed font-label text-xs tracking-[0.2em] uppercase mb-2 block flex items-center gap-2"
             >
               <span class="material-symbols-outlined text-sm">event</span>
-              {{ currentEvent?.date ? new Date(currentEvent.date).toLocaleDateString('ca-ES') : 'Data pendent' }}
+              {{
+                currentEvent?.date
+                  ? new Date(currentEvent.date).toLocaleDateString("ca-ES")
+                  : "Data pendent"
+              }}
             </span>
             <h1
               class="text-5xl md:text-7xl font-headline font-bold tracking-tighter text-on-background leading-none"
             >
-              {{ currentEvent?.title || 'SELECCIONA UN ESDEVENIMENT' }}
+              {{ currentEvent?.title || "SELECCIONA UN ESDEVENIMENT" }}
             </h1>
-            <p class="text-on-surface-variant font-body text-lg mt-2 flex items-center gap-1.5">
+            <p
+              class="text-on-surface-variant font-body text-lg mt-2 flex items-center gap-1.5"
+            >
               <span class="material-symbols-outlined text-lg">location_on</span>
-              {{ currentEvent?.venue || 'Sense recinte especificat' }}
+              {{ currentEvent?.venue || "Sense recinte especificat" }}
             </p>
           </div>
         </div>
       </header>
 
       <section class="px-6 mb-8">
-        <div class="flex flex-wrap gap-x-6 gap-y-3 p-4 bg-surface-container-low rounded-xl">
+        <div
+          class="flex flex-wrap gap-x-6 gap-y-3 p-4 bg-surface-container-low rounded-xl"
+        >
           <!-- Zone legend -->
           <template v-if="zoneColors.length">
-            <div v-for="z in zoneColors" :key="z.name" class="flex items-center gap-2">
-              <div class="w-4 h-4 rounded-sm" :style="{ backgroundColor: z.color }"></div>
-              <span class="font-label text-xs uppercase tracking-wider" :style="{ color: z.color }">{{ z.name }}</span>
+            <div
+              v-for="z in zoneColors"
+              :key="z.name"
+              class="flex items-center gap-2"
+            >
+              <div
+                class="w-4 h-4 rounded-sm"
+                :style="{ backgroundColor: z.color }"
+              ></div>
+              <span
+                class="font-label text-xs uppercase tracking-wider"
+                :style="{ color: z.color }"
+                >{{ z.name }}</span
+              >
             </div>
             <div class="w-px h-4 bg-white/10 self-center"></div>
           </template>
           <!-- Status indicators -->
           <div class="flex items-center gap-2">
-            <div class="w-4 h-4 rounded-sm bg-primary ring-[3px] ring-[#00ffff] shadow-[0_0_10px_rgba(0,255,255,0.8)]"></div>
-            <span class="font-label text-xs uppercase tracking-wider text-on-surface-variant">Seleccionat</span>
+            <div
+              class="w-4 h-4 rounded-sm bg-primary ring-[3px] ring-[#00ffff] shadow-[0_0_10px_rgba(0,255,255,0.8)]"
+            ></div>
+            <span
+              class="font-label text-xs uppercase tracking-wider text-on-surface-variant"
+              >Seleccionat</span
+            >
           </div>
           <div class="flex items-center gap-2">
-            <div class="w-4 h-4 rounded-sm bg-tertiary" style="background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.5), rgba(0,0,0,0.5) 4px, transparent 4px, transparent 8px);"></div>
-            <span class="font-label text-xs uppercase tracking-wider text-on-surface-variant">Reservat</span>
+            <div
+              class="w-4 h-4 rounded-sm bg-tertiary"
+              style="
+                background-image: repeating-linear-gradient(
+                  45deg,
+                  rgba(0, 0, 0, 0.5),
+                  rgba(0, 0, 0, 0.5) 4px,
+                  transparent 4px,
+                  transparent 8px
+                );
+              "
+            ></div>
+            <span
+              class="font-label text-xs uppercase tracking-wider text-on-surface-variant"
+              >Reservat</span
+            >
           </div>
           <div class="flex items-center gap-2">
             <div class="w-4 h-4 rounded-sm bg-error-container opacity-40"></div>
-            <span class="font-label text-xs uppercase tracking-wider text-on-surface-variant">Venut</span>
+            <span
+              class="font-label text-xs uppercase tracking-wider text-on-surface-variant"
+              >Venut</span
+            >
           </div>
         </div>
       </section>
@@ -335,44 +388,69 @@ const zoneColors = computed(() => {
                 :class="getSeatClass(seat)"
                 :style="getSeatStyle(seat)"
                 @click="handleSeatClick(seat.id)"
-                :disabled="seat.status !== 'available' && !selectedSeats.has(seat.id)"
+                :disabled="
+                  seat.status !== 'available' && !selectedSeats.has(seat.id)
+                "
               >
                 <!-- Icono de estado overlay -->
-                <span v-if="selectedSeats.value?.has(seat.id)"
+                <span
+                  v-if="selectedSeats.value?.has(seat.id)"
                   class="material-symbols-outlined text-white drop-shadow"
-                  style="font-size:0.7rem">check</span>
-                <span v-else-if="seat.status === 'sold'"
+                  style="font-size: 0.7rem"
+                  >check</span
+                >
+                <span
+                  v-else-if="seat.status === 'sold'"
                   class="material-symbols-outlined text-white/80"
-                  style="font-size:0.65rem">close</span>
-                <span v-else-if="seat.status === 'reserved'"
+                  style="font-size: 0.65rem"
+                  >close</span
+                >
+                <span
+                  v-else-if="seat.status === 'reserved'"
                   class="material-symbols-outlined text-white/80"
-                  style="font-size:0.65rem">lock</span>
+                  style="font-size: 0.65rem"
+                  >lock</span
+                >
                 <!-- Fila + número (solo en disponible) -->
-                <span v-else
+                <span
+                  v-else
                   class="text-[0.45rem] sm:text-[0.55rem] font-bold tracking-tighter text-black/60"
                   >{{ seat.row }}{{ seat.number }}</span
                 >
               </button>
               <!-- Tooltip hover -->
               <div
-                class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50
-                       opacity-0 group-hover:opacity-100 transition-opacity duration-150
-                       bg-zinc-900/95 border border-white/10 backdrop-blur-md
-                       rounded-xl px-3 py-2 w-36 shadow-xl text-center"
+                class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-150 bg-zinc-900/95 border border-white/10 backdrop-blur-md rounded-xl px-3 py-2 w-36 shadow-xl text-center"
               >
-                <p class="font-headline font-bold text-[10px] uppercase tracking-widest"
-                   :style="seat.zone_color ? { color: seat.zone_color } : {}"
-                   :class="!seat.zone_color ? 'text-primary' : ''"
-                >{{ seat.zone_name ?? 'General' }}</p>
-                <p class="text-white font-bold text-sm mt-0.5">€{{ parseFloat(seat.price).toFixed(2) }}</p>
-                <p class="text-zinc-400 text-[10px] mt-0.5">Fila {{ seat.row }} · Seient {{ seat.number }}</p>
-                <p class="text-[9px] mt-1 font-bold uppercase tracking-widest"
-                   :class="{
-                     'text-emerald-400': seat.status === 'available',
-                     'text-amber-400': seat.status === 'reserved',
-                     'text-red-400': seat.status === 'sold',
-                   }"
-                >{{ seat.status === 'available' ? 'Disponible' : seat.status === 'reserved' ? 'Reservat' : 'Venut' }}</p>
+                <p
+                  class="font-headline font-bold text-[10px] uppercase tracking-widest"
+                  :style="seat.zone_color ? { color: seat.zone_color } : {}"
+                  :class="!seat.zone_color ? 'text-primary' : ''"
+                >
+                  {{ seat.zone_name ?? "General" }}
+                </p>
+                <p class="text-white font-bold text-sm mt-0.5">
+                  €{{ parseFloat(seat.price).toFixed(2) }}
+                </p>
+                <p class="text-zinc-400 text-[10px] mt-0.5">
+                  Fila {{ seat.row }} · Seient {{ seat.number }}
+                </p>
+                <p
+                  class="text-[9px] mt-1 font-bold uppercase tracking-widest"
+                  :class="{
+                    'text-emerald-400': seat.status === 'available',
+                    'text-amber-400': seat.status === 'reserved',
+                    'text-red-400': seat.status === 'sold',
+                  }"
+                >
+                  {{
+                    seat.status === "available"
+                      ? "Disponible"
+                      : seat.status === "reserved"
+                        ? "Reservat"
+                        : "Venut"
+                  }}
+                </p>
               </div>
             </div>
           </div>
@@ -408,7 +486,8 @@ const zoneColors = computed(() => {
         v-if="selectedSeats.size === 0"
         class="flex-grow flex items-center justify-center text-outline-variant font-label text-sm uppercase tracking-widest text-center px-4"
       >
-        Encara no has seleccionat entrades. Fes clic en algun seient disponible del mapa.
+        Encara no has seleccionat entrades. Fes clic en algun seient disponible
+        del mapa.
       </div>
 
       <div
@@ -425,7 +504,7 @@ const zoneColors = computed(() => {
             <div>
               <span
                 class="text-primary-fixed font-label text-[10px] uppercase tracking-widest"
-                >{{ seat.zone_name ?? 'Zona' }}</span
+                >{{ seat.zone_name ?? "Zona" }}</span
               >
               <h3 class="text-xl font-bold font-headline mt-1">
                 Fila {{ seat.row }}, Seient {{ seat.number }}
@@ -577,26 +656,24 @@ const zoneColors = computed(() => {
 
     <!-- Mobile BottomNav -->
     <nav
-      class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 md:hidden bg-slate-950/80 backdrop-blur-2xl rounded-t-3xl z-50 border-t border-white/5 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]"
+      class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 bg-zinc-950/90 backdrop-blur-2xl rounded-t-3xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,221,221,0.1)]"
     >
       <button
-        class="flex flex-col items-center justify-center text-blue-400 bg-blue-500/10 rounded-xl px-4 py-2 scale-110 duration-300"
+        class="flex flex-col items-center justify-center text-cyan-400 drop-shadow-[0_0_8px_rgba(0,221,221,0.6)] active:scale-110 duration-300"
       >
         <span class="material-symbols-outlined">map</span>
-        <span
-          class="font-['Inter'] text-[10px] font-bold tracking-widest uppercase mt-1"
-          >Map
+        <span class="font-body text-[10px] uppercase tracking-widest mt-1"
+          >Mapa
           {{ selectedSeats.size > 0 ? `(${selectedSeats.size})` : "" }}</span
         >
       </button>
       <button
-        class="flex flex-col items-center justify-center text-slate-500 hover:text-blue-300 transition-colors"
+        class="flex flex-col items-center justify-center text-zinc-500 active:bg-white/5 transition-all active:scale-110 duration-300"
         @click="processCheckout()"
       >
         <span class="material-symbols-outlined">payments</span>
-        <span
-          class="font-['Inter'] text-[10px] font-bold tracking-widest uppercase mt-1"
-          >Pay</span
+        <span class="font-body text-[10px] uppercase tracking-widest mt-1"
+          >Pagar</span
         >
       </button>
     </nav>
