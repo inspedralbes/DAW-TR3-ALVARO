@@ -577,26 +577,25 @@ const zoneColors = computed(() => {
 
     <!-- Mobile BottomNav -->
     <nav
-      class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 md:hidden bg-slate-950/80 backdrop-blur-2xl rounded-t-3xl z-50 border-t border-white/5 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]"
+      class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 bg-zinc-950/90 backdrop-blur-2xl rounded-t-3xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,221,221,0.1)]"
     >
       <button
-        class="flex flex-col items-center justify-center text-blue-400 bg-blue-500/10 rounded-xl px-4 py-2 scale-110 duration-300"
+        class="flex flex-col items-center justify-center text-cyan-400 drop-shadow-[0_0_8px_rgba(0,221,221,0.6)] active:scale-110 duration-300"
       >
         <span class="material-symbols-outlined">map</span>
         <span
-          class="font-['Inter'] text-[10px] font-bold tracking-widest uppercase mt-1"
-          >Map
-          {{ selectedSeats.size > 0 ? `(${selectedSeats.size})` : "" }}</span
+          class="font-body text-[10px] uppercase tracking-widest mt-1"
+          >Mapa {{ selectedSeats.size > 0 ? `(${selectedSeats.size})` : "" }}</span
         >
       </button>
       <button
-        class="flex flex-col items-center justify-center text-slate-500 hover:text-blue-300 transition-colors"
+        class="flex flex-col items-center justify-center text-zinc-500 active:bg-white/5 transition-all active:scale-110 duration-300"
         @click="processCheckout()"
       >
         <span class="material-symbols-outlined">payments</span>
         <span
-          class="font-['Inter'] text-[10px] font-bold tracking-widest uppercase mt-1"
-          >Pay</span
+          class="font-body text-[10px] uppercase tracking-widest mt-1"
+          >Pagar</span
         >
       </button>
     </nav>

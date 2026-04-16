@@ -311,21 +311,22 @@
     <nav
       class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 bg-zinc-950/90 backdrop-blur-2xl rounded-t-3xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,221,221,0.1)]"
     >
-      <button
+      <NuxtLink
+        to="/"
         class="flex flex-col items-center justify-center text-cyan-400 drop-shadow-[0_0_8px_rgba(0,221,221,0.6)] active:scale-110 duration-300"
       >
         <span class="material-symbols-outlined">explore</span>
         <span class="font-body text-[10px] uppercase tracking-widest mt-1"
-          >Explore</span
+          >Explorar</span
         >
-      </button>
+      </NuxtLink>
       <NuxtLink
         to="/my-tickets"
         class="flex flex-col items-center justify-center text-zinc-500 active:bg-white/5 transition-all active:scale-110 duration-300"
       >
         <span class="material-symbols-outlined">person</span>
         <span class="font-body text-[10px] uppercase tracking-widest mt-1"
-          >My Tickets</span
+          >Entrades</span
         >
       </NuxtLink>
     </nav>
