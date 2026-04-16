@@ -67,7 +67,7 @@ class SeatController extends Controller
         if ($currentReservationsCount >= 5) {
             return response()->json([
                 'success' => false,
-                'error' => 'Purchase limit of 5 seats reached.',
+                'error' => 'Heu assolit el límit de 5 entrades per sessió.',
             ], 403);
         }
 
@@ -83,7 +83,7 @@ class SeatController extends Controller
             Log::warning("Conflict or invalid state for seat {$request->seat_id} by session {$request->session_id}");
             return response()->json([
                 'success' => false,
-                'error' => 'Seat already reserved or sold',
+                'error' => 'Seient ja reservat o venut',
             ], 409);
         }
 
@@ -95,7 +95,7 @@ class SeatController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Seat reserved successfully',
+            'message' => 'Seient reservat amb èxit',
             'data' => [
                 'seat_id' => $seat->id,
                 'status' => $seat->status,
@@ -123,7 +123,7 @@ class SeatController extends Controller
                 'reserved_at' => null,
             ]);
             event(new \App\Events\SeatUpdated($seat));
-            Log::info("Seat released: {$seat->id} by user cancelling");
+            Log::info("Seient alliberat: {$seat->id} per l'usuari");
         }
 
         return response()->json(['success' => true]);
@@ -156,7 +156,7 @@ class SeatController extends Controller
                 ->get();
 
             if ($seatsToProcess->count() !== collect($request->seat_ids)->count()) {
-                throw new \Exception('One or more seats are not reserved by you or have expired.');
+                throw new \Exception('Un o més seients no estan reservats per tu o han caducat.');
             }
 
             $eventId = $seatsToProcess->first()->event_id;
@@ -183,12 +183,12 @@ class SeatController extends Controller
             // Broadcast the updates for each seat
             foreach ($seatsToProcess as $seat) {
                 event(new SeatUpdated($seat));
-                Log::info("Seat sold: {$seat->id} to user: {$user->id}");
+                Log::info("Seient venut: {$seat->id} a l'usuari: {$user->id}");
             }
 
             return response()->json([
                 'success' => true,
-                'message' => 'Seats sold successfully',
+                'message' => 'Seients venuts amb èxit',
                 'data' => [
                     'user_id' => $user->id,
                     'seats' => $seatsToProcess->pluck('id'),
@@ -197,7 +197,7 @@ class SeatController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::warning("Checkout failed for session {$request->session_id}: " . $e->getMessage());
+            Log::warning("Checkout fallit per a la sessió {$request->session_id}: " . $e->getMessage());
             
             return response()->json([
                 'success' => false,

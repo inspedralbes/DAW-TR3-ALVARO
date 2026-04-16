@@ -60,7 +60,7 @@ onMounted(async () => {
       }
       // Show toast
       liveUpdate.value = {
-        message: `Alguien acaba de reservar un asiento.`,
+        message: `Algú acaba de reservar un seient.`,
         show: true,
       };
       setTimeout(() => {
@@ -87,8 +87,8 @@ const handleSeatClick = async (seatId) => {
 
   if (selectedSeats.value.size >= 5) {
     showToast(
-      "Límite de entradas alcanzado",
-      "Solo puedes seleccionar un máximo de 5 entradas por compra.",
+      "Límit d'entrades assolit",
+      "Només pots seleccionar un màxim de 5 entrades per compra.",
       "warning",
     );
     return;
@@ -136,12 +136,12 @@ const processCheckout = async () => {
     const status = e.response?.status || e.status;
     const msg = e.response?._data?.error || e.message;
     if (status === 409 || status === 403) {
-      showToast("Operación abortada", msg, "error");
+      showToast("Operació cancel·lada", msg, "error");
     } else {
       console.error("Error Checkout General", e);
       showToast(
-        "Error inesperado",
-        "Hubo un error procesando tu solicitud.",
+        "Error inesperat",
+        "Hi ha hagut un error processant la teva sol·licitud.",
         "error",
       );
     }
