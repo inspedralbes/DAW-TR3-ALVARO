@@ -1,0 +1,30 @@
+name: Auto-Despliegue a Hetzner
+
+on:
+  push:
+    branches:
+      - main # Cambia esto a "master" si tu rama principal se llama master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 🚀 Conectar a Servidor VPS y Desplegar
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST_IP }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          # El comando script entrará en la carpeta, actualizará git, reiniciará docker y correrá la migración
+          script: |
+            cd prj-entrades-varito9
+            git pull origin main
+            sed -i 's/APP_ENV=local/APP_ENV=production/' api/.env
+            sed -i 's/APP_DEBUG=true/APP_DEBUG=false/' api/.env
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+            sleep 15
+            docker exec ticket_api composer install --no-interaction --prefer-dist --optimize-autoloader
+            docker exec ticket_api php artisan config:clear
+            docker exec ticket_api php artisan migrate --force

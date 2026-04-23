@@ -1,0 +1,101 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: ticket_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ticket_platform
+    ports:
+      - "127.0.0.1:3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: ticket_api
+    restart: always
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=ticket_platform
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - REDIS_HOST=redis
+      - APP_KEY=base64:2fl+Ktvkfl+Ktvkfl+Ktvkfl+Ktvkfl+Ktvkfl+Ktvk=
+      - APP_ENV=local
+      - APP_DEBUG=true
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api:/var/www/html
+    command: >
+      bash -c "composer install --no-interaction &&
+               php artisan config:clear &&
+               php artisan migrate --force &&
+               php artisan db:seed --class=AdminUserSeeder --force &&
+               php artisan db:seed --class=DefaultEventSeeder --force &&
+               php artisan serve --host=0.0.0.0 --port=8000"
+
+  websockets:
+    build:
+      context: ./websockets
+      dockerfile: Dockerfile
+    container_name: ticket_websockets
+    restart: always
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_NAME=ticket_platform
+      - PORT=3001
+      - REDIS_HOST=redis
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./websockets:/app
+      - websockets_node_modules:/app/node_modules
+    command: sh -c "npm install && npm run dev"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ticket_frontend
+    restart: always
+    depends_on:
+      - websockets
+    environment:
+      - NUXT_PUBLIC_API_URL=http://localhost:8000
+      - NUXT_PUBLIC_WS_URL=http://localhost:3001
+      - HOST=0.0.0.0
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+      - frontend_nuxt:/app/.nuxt
+    command: sh -c "npm install && npm run dev"
+
+  redis:
+    image: redis:alpine
+    container_name: ticket_redis
+    restart: always
+    ports:
+      - "127.0.0.1:6379:6379"
+
+volumes:
+  db_data:
+  websockets_node_modules:
+  frontend_node_modules:
+  frontend_nuxt:

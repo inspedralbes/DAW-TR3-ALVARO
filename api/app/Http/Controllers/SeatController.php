@@ -1,0 +1,241 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Events\SeatUpdated;
+use App\Models\Seat;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
+class SeatController extends Controller
+{
+    public function index(Request $request)
+    {
+        $query = Seat::with('event');
+        if ($request->has('event_id')) {
+            $query->where('event_id', $request->event_id);
+        }
+
+        $seats = $query->get()->map(function ($seat) {
+            $zoneName  = null;
+            $zoneColor = null;
+
+            if ($seat->event && !empty($seat->event->zones)) {
+                foreach ($seat->event->zones as $zone) {
+                    if (in_array($seat->row, $zone['rows'] ?? [])) {
+                        $zoneName  = $zone['name']  ?? null;
+                        $zoneColor = $zone['color'] ?? null;
+                        break;
+                    }
+                }
+            }
+
+            return [
+                'id'         => $seat->id,
+                'row'        => $seat->row,
+                'number'     => $seat->number,
+                'status'     => $seat->status,
+                'session_id' => $seat->session_id,
+                'price'      => (float) $seat->price,
+                'zone_name'  => $zoneName,
+                'zone_color' => $zoneColor,
+                'event_id'   => $seat->event_id,
+                'event'      => $seat->event,
+            ];
+        });
+
+        return response()->json($seats);
+    }
+
+    public function reserve(Request $request)
+    {
+        $request->validate([
+            'seat_id' => 'required|exists:seats,id',
+            'session_id' => 'required|string',
+        ]);
+
+        $seatToReserve = Seat::findOrFail($request->seat_id);
+
+        // Check limit of 5 per session locally to prevent hoarding, scoped by event
+        $currentReservationsCount = Seat::where('session_id', $request->session_id)
+            ->where('event_id', $seatToReserve->event_id)
+            ->whereIn('status', ['reserved', 'sold'])
+            ->count();
+            
+        if ($currentReservationsCount >= 5) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Heu assolit el límit de 5 entrades per sessió.',
+            ], 403);
+        }
+
+        $updated = Seat::where('id', $request->seat_id)
+            ->where('status', 'available')
+            ->update([
+                'status' => 'reserved',
+                'session_id' => $request->session_id,
+                'reserved_at' => now(),
+            ]);
+
+        if (!$updated) {
+            Log::warning("Conflict or invalid state for seat {$request->seat_id} by session {$request->session_id}");
+            return response()->json([
+                'success' => false,
+                'error' => 'Seient ja reservat o venut',
+            ], 409);
+        }
+
+        $seat = Seat::find($request->seat_id);
+        
+        // Dispatch broadcast event
+        event(new SeatUpdated($seat));
+        Log::info("Seat reserved: {$seat->id} status: {$seat->status}");
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Seient reservat amb èxit',
+            'data' => [
+                'seat_id' => $seat->id,
+                'status' => $seat->status,
+                'expires_at' => $seat->reserved_at->addMinutes(5),
+            ],
+        ]);
+    }
+
+    public function release(Request $request)
+    {
+        $request->validate([
+            'seat_id' => 'required|exists:seats,id',
+            'session_id' => 'required|string',
+        ]);
+
+        $seat = Seat::where('id', $request->seat_id)
+            ->where('status', 'reserved')
+            ->where('session_id', $request->session_id)
+            ->first();
+
+        if ($seat) {
+            $seat->update([
+                'status' => 'available',
+                'session_id' => null,
+                'reserved_at' => null,
+            ]);
+            event(new \App\Events\SeatUpdated($seat));
+            Log::info("Seient alliberat: {$seat->id} per l'usuari");
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    public function checkout(Request $request)
+    {
+        $request->validate([
+            'seat_ids' => 'required|array|min:1|max:5',
+            'seat_ids.*' => 'exists:seats,id',
+            'session_id' => 'required|string',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Find or create the user
+            $user = User::firstOrCreate(
+                ['email' => $request->email],
+                ['name' => $request->name, 'password' => bcrypt(str()->random(16))]
+            );
+
+            // Fetch seats ensuring they belong to this session and are reserved
+            $seatsToProcess = Seat::whereIn('id', $request->seat_ids)
+                ->where('status', 'reserved')
+                ->where('session_id', $request->session_id)
+                ->lockForUpdate()
+                ->get();
+
+            if ($seatsToProcess->count() !== collect($request->seat_ids)->count()) {
+                throw new \Exception('Un o més seients no estan reservats per tu o han caducat.');
+            }
+
+            $eventId = $seatsToProcess->first()->event_id;
+
+            // Check if the user has reached the limit of 5 purchases for this event
+            $userOwnedSeatsForEvent = Seat::where('user_id', $user->id)
+                ->where('event_id', $eventId)
+                ->where('status', 'sold')
+                ->count();
+                
+            if ($userOwnedSeatsForEvent + $seatsToProcess->count() > 5) {
+                throw new \Exception('Límit de 5 entrades per persona superada per a aquest esdeveniment.');
+            }
+
+            // Update all seats
+            foreach ($seatsToProcess as $seat) {
+                $seat->status = 'sold';
+                $seat->user_id = $user->id;
+                $seat->save();
+            }
+
+            DB::commit();
+
+            // Broadcast the updates for each seat
+            foreach ($seatsToProcess as $seat) {
+                event(new SeatUpdated($seat));
+                Log::info("Seient venut: {$seat->id} a l'usuari: {$user->id}");
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Seients venuts amb èxit',
+                'data' => [
+                    'user_id' => $user->id,
+                    'seats' => $seatsToProcess->pluck('id'),
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::warning("Checkout fallit per a la sessió {$request->session_id}: " . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 409);
+        }
+    }
+
+    public function myTicketsByToken(Request $request)
+    {
+        $user = $request->user();
+
+        $tickets = Seat::where('user_id', $user->id)
+            ->where('status', 'sold')
+            ->with('event')
+            ->orderBy('row')
+            ->orderBy('number')
+            ->get()
+            ->map(fn($s) => [
+                'id'           => $s->id,
+                'row'          => $s->row,
+                'number'       => $s->number,
+                'label'        => $s->row . $s->number,
+                'price'        => (float) $s->price,
+                'purchased_at' => $s->updated_at?->toISOString(),
+                'event'        => $s->event ? [
+                    'id'    => $s->event->id,
+                    'title' => $s->event->title,
+                    'venue' => $s->event->venue,
+                    'date'  => $s->event->date?->toISOString(),
+                ] : null,
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'user'    => ['name' => $user->name, 'email' => $user->email],
+            'tickets' => $tickets,
+            'total'   => $tickets->sum('price'),
+        ]);
+    }
+}
