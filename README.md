@@ -1,6 +1,6 @@
 <h1 align="center">
   <img src="https://raw.githubusercontent.com/ABSphreak/ABSphreak/master/gifs/Hi.gif" width="30px" />
-  Bones! Soc en Alvaro
+  Bones! Soc en Alvaro.
 </h1>
 
 ## 🌟 Nom del Projecte
